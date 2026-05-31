@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 
-import Dashboard from "./pages/Dashboard";
-import FormBuilder from "./pages/FormBuilder";
-import Workflow from "./pages/Workflow";
-import Preview from "./pages/Preview";
-import Submissions from "./pages/Submissions";
+import Dashboard from "./pages/dashboard";
+import FormBuilder from "./pages/formbuilder";
+import Workflow from "./pages/workflow";
+import Preview from "./pages/preview";
+import Submissions from "./pages/submissions";
+import Components from "./pages/components";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/workflow" element={<Workflow />} />
           <Route path="/preview" element={<Preview />} />
           <Route path="/submissions" element={<Submissions />} />
+          <Route path="/components" element={<Components />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>
