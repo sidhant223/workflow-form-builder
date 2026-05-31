@@ -6,6 +6,7 @@ const menuItems = [
   { name: "Workflow", path: "/workflow", icon: "🔗" },
   { name: "Preview", path: "/preview", icon: "👁️" },
   { name: "Submissions", path: "/submissions", icon: "📥" },
+  { name: "Components", path: "/components", icon: "🧩" },
 ];
 
 function Sidebar({ isOpen, closeSidebar }) {
