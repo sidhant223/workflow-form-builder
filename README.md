@@ -111,4 +111,4 @@ src/
 └── App.jsx
 ```
 
-See [`NOTES.md`](./NOTES.md) for the reusable-component design write-up.
+
