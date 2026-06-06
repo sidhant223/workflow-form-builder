@@ -20,6 +20,10 @@ export default function Select({
     typeof opt === "object" ? opt : { label: opt, value: opt }
   );
 
+  // Only fall back to a placeholder defaultValue when the caller isn't driving
+  // the select with a controlled `value` — avoids React's controlled/uncontrolled warning.
+  const isControlled = rest.value !== undefined;
+
   return (
     <div className="space-y-1.5">
       {label && (
@@ -37,7 +41,7 @@ export default function Select({
         disabled={disabled}
         required={required}
         aria-invalid={!!error}
-        defaultValue={placeholder ? "" : undefined}
+        defaultValue={!isControlled && placeholder ? "" : undefined}
         className={`w-full rounded-lg border bg-white p-2.5 text-sm text-gray-900 transition-colors
           focus:outline-none focus:ring-2
           disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400
