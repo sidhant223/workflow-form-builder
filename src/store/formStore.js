@@ -27,10 +27,20 @@ import { createField } from "../schemas/formSchema";
 export const useFormStore = create(
   persist(
     (set) => ({
+      // Form metadata
+      formName: "",
+      formDescription: "",
+      createdBy: "",
+      version: "1.0",
+
+      // Form structure
       fields: [],
+      sections: [],
       selectedFieldId: null,
       nextId: 1,
+      nextSectionId: 1,
 
+      // Add field
       addField: (type) =>
         set((state) => {
           const id = `field_${state.nextId}`;
@@ -42,6 +52,7 @@ export const useFormStore = create(
           };
         }),
 
+      // Remove field
       removeField: (id) =>
         set((state) => ({
           fields: state.fields.filter((f) => f.id !== id),
@@ -49,6 +60,7 @@ export const useFormStore = create(
             state.selectedFieldId === id ? null : state.selectedFieldId,
         })),
 
+      // Update field
       updateField: (id, data) =>
         set((state) => ({
           fields: state.fields.map((f) =>
@@ -56,28 +68,125 @@ export const useFormStore = create(
           ),
         })),
 
+      // Duplicate field
+      duplicateField: (id) =>
+        set((state) => {
+          const fieldToDuplicate = state.fields.find((f) => f.id === id);
+          if (!fieldToDuplicate) return state;
+
+          const newId = `field_${state.nextId}`;
+          const duplicated = {
+            ...fieldToDuplicate,
+            id: newId,
+            label: `${fieldToDuplicate.label} Copy`,
+          };
+
+          const fieldIndex = state.fields.findIndex((f) => f.id === id);
+          const newFields = [
+            ...state.fields.slice(0, fieldIndex + 1),
+            duplicated,
+            ...state.fields.slice(fieldIndex + 1),
+          ];
+
+          return {
+            fields: newFields,
+            selectedFieldId: newId,
+            nextId: state.nextId + 1,
+          };
+        }),
+
+      // Reorder fields
+      reorderFields: (fromIndex, toIndex) =>
+        set((state) => {
+          const newFields = [...state.fields];
+          const [movedField] = newFields.splice(fromIndex, 1);
+          newFields.splice(toIndex, 0, movedField);
+          return { fields: newFields };
+        }),
+
+      // Select field
       selectField: (id) => set({ selectedFieldId: id }),
 
-      resetForm: () =>
-        set({ fields: [], selectedFieldId: null, nextId: 1 }),
-
-      loadSchema: (fields) =>
+      // Update form metadata
+      updateFormMetadata: (metadata) =>
         set((state) => ({
-          fields,
-          selectedFieldId: null,
-          // keep ids unique even after loading an example schema
-          nextId: Math.max(state.nextId, fields.length + 1),
+          ...state,
+          ...metadata,
         })),
+
+      // Add section
+      addSection: (name = "New Section") =>
+        set((state) => {
+          const id = `section_${state.nextSectionId}`;
+          const section = { id, name, fields: [] };
+          return {
+            sections: [...state.sections, section],
+            nextSectionId: state.nextSectionId + 1,
+          };
+        }),
+
+      // Update section
+      updateSection: (id, data) =>
+        set((state) => ({
+          sections: state.sections.map((s) =>
+            s.id === id ? { ...s, ...data } : s
+          ),
+        })),
+
+      // Remove section
+      removeSection: (id) =>
+        set((state) => ({
+          sections: state.sections.filter((s) => s.id !== id),
+        })),
+
+      // Reset form
+      resetForm: () =>
+        set({
+          fields: [],
+          sections: [],
+          selectedFieldId: null,
+          formName: "",
+          formDescription: "",
+          createdBy: "",
+          version: "1.0",
+          nextId: 1,
+          nextSectionId: 1,
+        }),
+
+      // Load schema
+      loadSchema: (data) =>
+        set((state) => {
+          const fieldCount = data.fields ? data.fields.length : 0;
+          const sectionCount = data.sections ? data.sections.length : 0;
+          return {
+            fields: data.fields || [],
+            sections: data.sections || [],
+            selectedFieldId: null,
+            formName: data.formName || "",
+            formDescription: data.formDescription || "",
+            createdBy: data.createdBy || "",
+            version: data.version || "1.0",
+            nextId: Math.max(state.nextId, fieldCount + 1),
+            nextSectionId: Math.max(state.nextSectionId, sectionCount + 1),
+          };
+        }),
     }),
     {
       name: "form-builder-schema",
-      // Only the schema needs to survive a refresh — not the transient selection.
-      partialize: (state) => ({ fields: state.fields, nextId: state.nextId }),
+      partialize: (state) => ({
+        fields: state.fields,
+        sections: state.sections,
+        formName: state.formName,
+        formDescription: state.formDescription,
+        createdBy: state.createdBy,
+        version: state.version,
+        nextId: state.nextId,
+        nextSectionId: state.nextSectionId,
+      }),
     }
   )
 );
 
-// Convenience selector: the full field object that's currently selected.
 export const useSelectedField = () =>
   useFormStore((state) =>
     state.fields.find((f) => f.id === state.selectedFieldId) || null

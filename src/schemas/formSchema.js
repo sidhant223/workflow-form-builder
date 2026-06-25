@@ -59,6 +59,7 @@ export function createField(type, id) {
     placeholder: meta.placeholder || "",
     required: false,
     defaultValue: meta.type === "checkbox" ? false : "",
+    helpText: "",
   };
 
   if (hasOptions(meta.type)) {

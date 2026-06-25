@@ -6,6 +6,7 @@ export default function Textarea({
   label,
   placeholder,
   error,
+  helpText,
   disabled = false,
   required = false,
   rows = 4,
@@ -46,6 +47,7 @@ export default function Textarea({
       />
 
       {error && <p className="text-xs text-red-500">{error}</p>}
+      {helpText && !error && <p className="text-xs text-gray-500">{helpText}</p>}
     </div>
   );
 }

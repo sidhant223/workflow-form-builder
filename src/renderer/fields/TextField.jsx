@@ -11,6 +11,7 @@ export default function TextField({ field, value, onChange, disabled }) {
       label={field.label}
       type={field.type}
       placeholder={field.placeholder}
+      helpText={field.helpText}
       required={field.required}
       disabled={disabled}
       value={value ?? ""}

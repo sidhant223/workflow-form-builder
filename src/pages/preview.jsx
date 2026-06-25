@@ -8,10 +8,24 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useFormStore } from "../store/formStore";
 import FormRenderer from "../renderer/FormRenderer";
+import JSONViewer from "../components/viewer/JSONViewer";
 
 function Preview() {
   const fields = useFormStore((s) => s.fields);
+  const formName = useFormStore((s) => s.formName);
+  const formDescription = useFormStore((s) => s.formDescription);
+  const createdBy = useFormStore((s) => s.createdBy);
+  const version = useFormStore((s) => s.version);
   const [submitted, setSubmitted] = useState(null);
+
+  const schemaData = {
+    formName,
+    formDescription,
+    createdBy,
+    version,
+    fields,
+    submittedData: submitted,
+  };
 
   return (
     <div>
@@ -20,13 +34,30 @@ function Preview() {
         <p className="mt-1 text-gray-600">
           This is exactly how your form will look and behave for end users.
         </p>
+        <Link
+          to="/form-builder"
+          className="inline-block mt-3 text-sm font-medium text-violet-600 hover:underline"
+        >
+          ← Back to Builder
+        </Link>
       </div>
 
       <div className="mx-auto max-w-xl">
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="mb-6 text-lg font-semibold text-gray-900">
-            Generated Form
-          </h2>
+          {formName && (
+            <div className="mb-6 pb-6 border-b">
+              <h1 className="text-2xl font-bold text-gray-900">{formName}</h1>
+              {formDescription && (
+                <p className="mt-2 text-gray-600">{formDescription}</p>
+              )}
+              {(createdBy || version) && (
+                <div className="mt-3 flex gap-4 text-xs text-gray-500">
+                  {createdBy && <span>By: {createdBy}</span>}
+                  {version && <span>v{version}</span>}
+                </div>
+              )}
+            </div>
+          )}
 
           {fields.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-12 text-center">
@@ -52,7 +83,6 @@ function Preview() {
           )}
         </div>
 
-        {/* Submitted payload — handy for the demo, proves data is captured. */}
         {submitted && (
           <div className="mx-auto mt-5 max-w-xl rounded-2xl border border-green-200 bg-green-50 p-5">
             <div className="mb-2 flex items-center justify-between">
@@ -70,6 +100,8 @@ function Preview() {
           </div>
         )}
       </div>
+
+      <JSONViewer data={schemaData} />
     </div>
   );
 }

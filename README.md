@@ -2,12 +2,11 @@
 
 A React-based frontend prototype for a **Workflow & Dynamic Form Builder** application.
 It pairs the Week 1 dashboard and **Week 2 reusable UI component library** with a
-**Week 3 schema-driven Dynamic Form Rendering Engine** and a working Form Builder.
+**Week 3 schema-driven Dynamic Form Rendering Engine**, **Week 4 drag-and-drop form designer**, and a working Form Builder.
 
 ## Project Overview
 
-The app lets users build forms visually and manage workflow stages through a
-responsive dashboard. The Form Builder is fully **schema-driven**: fields are
+The app lets users build forms visually with an interactive drag-and-drop interface. The Form Builder is fully **schema-driven**: fields are
 described as plain JSON, a **field registry** maps each field type to a React
 component, and a **dynamic renderer** turns the schema into a live form — no
 hard-coded `<input/>` markup. Builder state lives in a global **Zustand** store
@@ -19,6 +18,7 @@ that **persists to localStorage**, so a form survives a page refresh.
 - **Tailwind CSS 4** (`@tailwindcss/vite`)
 - **React Router 7**
 - **Zustand** (global builder state + localStorage persistence)
+- **@dnd-kit** (drag-and-drop toolkit for field reordering and creation)
 - **Recharts** (dashboard chart)
 
 ## Week 2 Features
@@ -125,14 +125,67 @@ Zustand store (fields[])  ──persist──►  localStorage
 FormRenderer  ──maps──►  DynamicField  ──registry lookup──►  Field component
 ```
 
+## Week 4 Features — Drag-and-Drop & Advanced Form Design
+
+### Drag-and-Drop Functionality
+- **@dnd-kit integration** — industry-standard drag-and-drop library
+- **Field palette drag source** — drag field types from left panel
+- **Canvas drop target** — drop fields to create new form fields
+- **Sortable canvas** — reorder fields by dragging within canvas
+- **Smooth animations** — visual feedback during drag operations
+
+### Field Operations
+- **Field duplication** — duplicate button creates exact copy with unique ID
+- **Smart naming** — duplicated fields append " Copy" to label
+- **Field reordering** — drag fields to change order in form
+- **Instant updates** — all changes immediately reflect in store and preview
+
+### Enhanced Property Panel
+- **Label editing** — change field labels
+- **Placeholder configuration** — set field placeholder text
+- **Default values** — pre-fill fields with default values
+- **Help text support** — add instructional text below fields
+- **Required toggle** — mark fields as required
+- **Option management** — add/edit/remove options for dropdowns and radio buttons
+- **Quick actions** — duplicate and delete buttons for convenience
+
+### Form Metadata Management
+- **Form title/name** — set form title
+- **Form description** — add form description
+- **Author tracking** — record who created the form
+- **Version management** — track form versions
+- **Metadata display** — shows on preview page
+
+### Enhanced Preview Page
+- **Form header** — displays title and description
+- **Metadata info** — shows author and version
+- **Help text rendering** — displays help text on fields
+- **Professional layout** — polished form presentation
+- **Form submission** — captures and displays submitted data
+
+### Debugging Tools
+- **JSON Schema Viewer** — floating button shows live JSON schema
+- **Real-time inspection** — view complete form structure
+- **Copy to clipboard** — easily export schema
+- **Schema includes metadata** — full form data visible
+
+### UI/UX Improvements
+- **Better spacing** — improved visual hierarchy
+- **Hover effects** — interactive field cards
+- **Selection highlighting** — blue highlight for selected fields
+- **Grab cursor** — indicates draggable items
+- **Empty states** — helpful messages for empty forms
+- **Emoji icons** — visual indicators for field types
+- **Responsive design** — works on all screen sizes
+
 ## Routes
 
 | Route           | Page              |
 | --------------- | ----------------- |
 | `/dashboard`    | Dashboard         |
-| `/form-builder` | Form Builder      |
+| `/form-builder` | Form Builder (with DnD) |
 | `/workflow`     | Workflow          |
-| `/preview`      | Preview           |
+| `/preview`      | Preview (with metadata) |
 | `/submissions`  | Submissions       |
 | `/components`   | Component Showcase|
 
@@ -170,38 +223,46 @@ src/
 ├── components/
 │   ├── header.jsx
 │   ├── sidebar.jsx
-│   └── ui/                # reusable component library
-│       ├── badge.jsx
-│       ├── button.jsx
-│       ├── card.jsx
-│       ├── checkbox.jsx
-│       ├── input.jsx
-│       ├── modal.jsx
-│       ├── radio.jsx
-│       ├── select.jsx
-│       ├── textarea.jsx
-│       └── toast.jsx
+│   ├── ui/                       # reusable component library
+│   │   ├── badge.jsx
+│   │   ├── button.jsx
+│   │   ├── card.jsx
+│   │   ├── checkbox.jsx
+│   │   ├── input.jsx             # (enhanced with helpText)
+│   │   ├── modal.jsx
+│   │   ├── radio.jsx
+│   │   ├── select.jsx
+│   │   ├── textarea.jsx          # (enhanced with helpText)
+│   │   └── toast.jsx
+│   ├── builder/                  # Week 4: Drag-and-drop components
+│   │   ├── FieldPalette.jsx      # Draggable field type selection
+│   │   ├── SortableCanvas.jsx    # Reorderable field list
+│   │   ├── DraggableField.jsx    # Individual draggable field item
+│   │   ├── PropertyPanel.jsx     # Field property editor
+│   │   └── FormMetadata.jsx      # Form-level settings editor
+│   └── viewer/
+│       └── JSONViewer.jsx        # Schema inspector modal
 ├── schemas/
-│   └── formSchema.js      # field model, factory + example schemas
-├── renderer/              # schema-driven rendering engine
-│   ├── FormRenderer.jsx   # reads schema → renders the form
-│   ├── DynamicField.jsx   # one schema field → one component
-│   ├── fieldRegistry.js   # type → component map
-│   └── fields/            # per-type field components
-│       ├── TextField.jsx
-│       ├── TextareaField.jsx
+│   └── formSchema.js             # field model, factory + example schemas (enhanced)
+├── renderer/                     # schema-driven rendering engine
+│   ├── FormRenderer.jsx          # reads schema → renders the form
+│   ├── DynamicField.jsx          # one schema field → one component
+│   ├── fieldRegistry.js          # type → component map
+│   └── fields/                   # per-type field components
+│       ├── TextField.jsx         # (enhanced with helpText)
+│       ├── TextareaField.jsx     # (enhanced with helpText)
 │       ├── SelectField.jsx
 │       ├── CheckboxField.jsx
 │       └── RadioField.jsx
 ├── store/
-│   └── formStore.js       # Zustand store + localStorage persistence
+│   └── formStore.js              # Zustand store + localStorage (Week 4: enhanced with metadata, sections, duplication, reordering)
 ├── layouts/
 │   └── MainLayout.jsx
 ├── pages/
 │   ├── components.jsx
 │   ├── dashboard.jsx
-│   ├── formbuilder.jsx    # palette · canvas · property panel
-│   ├── preview.jsx        # final form preview + submit
+│   ├── formbuilder.jsx           # DnD-enabled builder with metadata
+│   ├── preview.jsx               # preview with metadata + JSON viewer
 │   ├── submissions.jsx
 │   └── workflow.jsx
 └── App.jsx

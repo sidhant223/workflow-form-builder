@@ -9,6 +9,7 @@ export default function Input({
   type = "text",
   placeholder,
   error,
+  helpText,
   disabled = false,
   required = false,
   id,
@@ -48,6 +49,7 @@ export default function Input({
       />
 
       {error && <p className="text-xs text-red-500">{error}</p>}
+      {helpText && !error && <p className="text-xs text-gray-500">{helpText}</p>}
     </div>
   );
 }

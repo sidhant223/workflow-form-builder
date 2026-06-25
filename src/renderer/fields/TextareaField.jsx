@@ -8,6 +8,7 @@ export default function TextareaField({ field, value, onChange, disabled }) {
     <Textarea
       label={field.label}
       placeholder={field.placeholder}
+      helpText={field.helpText}
       required={field.required}
       disabled={disabled}
       value={value ?? ""}
