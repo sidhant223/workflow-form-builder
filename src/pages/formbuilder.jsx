@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useFormStore } from "../store/formStore";
 import { exampleEmployeeForm } from "../schemas/formSchema";
 import FieldPalette from "../components/builder/FieldPalette";
