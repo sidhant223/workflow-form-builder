@@ -32,6 +32,7 @@ export const useFormStore = create(
       formDescription: "",
       createdBy: "",
       version: "1.0",
+      workflowId: null,
 
       // Form structure
       fields: [],
@@ -149,6 +150,7 @@ export const useFormStore = create(
           formDescription: "",
           createdBy: "",
           version: "1.0",
+          workflowId: null,
           nextId: 1,
           nextSectionId: 1,
         }),
@@ -166,6 +168,7 @@ export const useFormStore = create(
             formDescription: data.formDescription || "",
             createdBy: data.createdBy || "",
             version: data.version || "1.0",
+            workflowId: data.workflowId || null,
             nextId: Math.max(state.nextId, fieldCount + 1),
             nextSectionId: Math.max(state.nextSectionId, sectionCount + 1),
           };
@@ -180,6 +183,7 @@ export const useFormStore = create(
         formDescription: state.formDescription,
         createdBy: state.createdBy,
         version: state.version,
+        workflowId: state.workflowId,
         nextId: state.nextId,
         nextSectionId: state.nextSectionId,
       }),
