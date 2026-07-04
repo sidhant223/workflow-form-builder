@@ -130,8 +130,11 @@ export default function PropertyPanel() {
       {/* Step assignment (multi-step forms) */}
       {sections.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Step</label>
+          <label htmlFor="prop-step" className="block text-sm font-medium text-gray-700 mb-1">
+            Step
+          </label>
           <select
+            id="prop-step"
             value={selectedField.sectionId || sections[0].id}
             onChange={(e) => handleChange("sectionId", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -149,8 +152,11 @@ export default function PropertyPanel() {
       {["text", "textarea", "password", "email"].includes(selectedField.type) && (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Min Length</label>
+            <label htmlFor="prop-minLength" className="block text-sm font-medium text-gray-700 mb-1">
+              Min Length
+            </label>
             <input
+              id="prop-minLength"
               type="number"
               min="0"
               value={selectedField.minLength ?? ""}
@@ -161,8 +167,11 @@ export default function PropertyPanel() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Length</label>
+            <label htmlFor="prop-maxLength" className="block text-sm font-medium text-gray-700 mb-1">
+              Max Length
+            </label>
             <input
+              id="prop-maxLength"
               type="number"
               min="0"
               value={selectedField.maxLength ?? ""}
@@ -179,8 +188,11 @@ export default function PropertyPanel() {
       {["text", "textarea"].includes(selectedField.type) && (
         <div className="space-y-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Regex Pattern</label>
+            <label htmlFor="prop-pattern" className="block text-sm font-medium text-gray-700 mb-1">
+              Regex Pattern
+            </label>
             <input
+              id="prop-pattern"
               type="text"
               value={selectedField.pattern ?? ""}
               onChange={(e) => handleChange("pattern", e.target.value)}
@@ -189,10 +201,11 @@ export default function PropertyPanel() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="prop-patternMessage" className="block text-sm font-medium text-gray-700 mb-1">
               Pattern Error Message
             </label>
             <input
+              id="prop-patternMessage"
               type="text"
               value={selectedField.patternMessage ?? ""}
               onChange={(e) => handleChange("patternMessage", e.target.value)}
@@ -207,8 +220,11 @@ export default function PropertyPanel() {
       {selectedField.type === "number" && (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Value</label>
+            <label htmlFor="prop-min" className="block text-sm font-medium text-gray-700 mb-1">
+              Minimum Value
+            </label>
             <input
+              id="prop-min"
               type="number"
               value={selectedField.min ?? ""}
               onChange={(e) => handleChange("min", e.target.value)}
@@ -216,8 +232,11 @@ export default function PropertyPanel() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Value</label>
+            <label htmlFor="prop-max" className="block text-sm font-medium text-gray-700 mb-1">
+              Maximum Value
+            </label>
             <input
+              id="prop-max"
               type="number"
               value={selectedField.max ?? ""}
               onChange={(e) => handleChange("max", e.target.value)}

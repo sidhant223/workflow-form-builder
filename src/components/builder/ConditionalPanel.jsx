@@ -33,10 +33,11 @@ export default function ConditionalPanel({ field }) {
 
   return (
     <div className="pt-4 border-t space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
+      <label htmlFor="showif-target" className="block text-sm font-medium text-gray-700">
         Show this field only when…
       </label>
       <select
+        id="showif-target"
         value={showIf?.field || ""}
         onChange={(e) => handleTargetChange(e.target.value)}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -52,6 +53,7 @@ export default function ConditionalPanel({ field }) {
       {showIf &&
         (valueOptions ? (
           <select
+            aria-label="Expected value"
             value={showIf.value}
             onChange={(e) => handleValueChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -66,6 +68,7 @@ export default function ConditionalPanel({ field }) {
         ) : (
           <input
             type="text"
+            aria-label="Expected value"
             value={showIf.value}
             onChange={(e) => handleValueChange(e.target.value)}
             placeholder="Expected value"
