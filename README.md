@@ -210,13 +210,50 @@ FormRenderer  ──maps──►  DynamicField  ──registry lookup──► 
 See `WEEK5-IMPLEMENTATION.md` for the full write-up (validation research,
 architecture notes, testing strategy, and the demo/screenshot checklist).
 
+## Week 6 Features — Workflow Management System
+
+### Workflow Configuration
+- `/workflow` lets you create named workflows and add/edit/delete/reorder
+  their stages (e.g. Draft → Submitted → Manager Review → Approved/Rejected).
+  Only the simulated Admin role can edit; other roles see a read-only view.
+
+### Linking Workflows to Forms
+- Attach a workflow to a form from the Form Builder's Form Settings panel —
+  every submission of that form then starts its life in the workflow's first
+  stage.
+
+### State Transitions & Actions
+- `workflowTransitions.js` derives valid next moves from a workflow's stage
+  list: sequential advance through review stages, Approve/Reject as a branch
+  before the terminal "Approved"/"Rejected" stages, no actions once terminal.
+  Action buttons on a submission change dynamically to match.
+
+### Timeline, History & Comments
+- Every submission tracks a full audit trail — stage, action, user, and an
+  optional comment per transition — visualized as a timeline on its detail
+  page. Approve/Reject actions prompt for a comment before completing.
+
+### Role Simulation & Task Assignment
+- A header dropdown simulates being logged in as Admin, Manager, or Employee
+  (no real auth) — this gates which workflow actions are available. Submissions
+  can be assigned to a mock user for review.
+
+### Workflow Dashboard & Notifications
+- `/dashboard` now shows real KPI cards (Pending Reviews, Approved Today,
+  Rejected, Draft Forms) and two live charts (Forms by Status, Workflow
+  Distribution). Toast notifications fire on submission and every workflow
+  action.
+
+See `WEEK6-IMPLEMENTATION.md` for the full write-up (workflow concepts,
+architecture notes, testing strategy, and the demo/screenshot checklist).
+
 ## Routes
 
 | Route           | Page              |
 | --------------- | ----------------- |
 | `/dashboard`    | Dashboard         |
 | `/form-builder` | Form Builder (with DnD) |
-| `/workflow`     | Workflow          |
+| `/workflow`     | Workflow Configuration |
 | `/preview`      | Preview (with metadata) |
 | `/submissions`  | Submissions       |
 | `/components`   | Component Showcase|
