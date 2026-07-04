@@ -3,9 +3,9 @@
 // action types a role can perform, and whether they can configure workflows.
 
 export const ROLE_PERMISSIONS = {
-  Employee: { actions: ["advance"], canConfigureWorkflows: false },
-  Manager: { actions: ["advance", "approve", "reject"], canConfigureWorkflows: false },
-  Admin: { actions: ["advance", "approve", "reject"], canConfigureWorkflows: true },
+  Employee: { actions: ["advance"], canConfigureWorkflows: false, canManageForms: false },
+  Manager: { actions: ["advance", "approve", "reject"], canConfigureWorkflows: false, canManageForms: false },
+  Admin: { actions: ["advance", "approve", "reject"], canConfigureWorkflows: true, canManageForms: true },
 };
 
 export function canPerformAction(role, actionType) {
@@ -14,4 +14,8 @@ export function canPerformAction(role, actionType) {
 
 export function canConfigureWorkflows(role) {
   return ROLE_PERMISSIONS[role]?.canConfigureWorkflows ?? false;
+}
+
+export function canManageForms(role) {
+  return ROLE_PERMISSIONS[role]?.canManageForms ?? false;
 }

@@ -1,9 +1,18 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import FormBuilder from "./formbuilder";
 import { useFormStore } from "../store/formStore";
+import { useFormsStore } from "../store/formsStore";
+import { createForm, updateForm } from "../services/formService";
+
+vi.mock("../services/formService", () => ({
+  getForms: vi.fn().mockResolvedValue([]),
+  createForm: vi.fn(),
+  updateForm: vi.fn(),
+  deleteForm: vi.fn().mockResolvedValue({}),
+}));
 
 // Field selection happens by clicking a DraggableField card, whose root element
 // also carries @dnd-kit's pointer-sensor listeners. In jsdom, userEvent's full
@@ -21,7 +30,7 @@ function renderBuilder() {
 
 beforeEach(() => {
   useFormStore.getState().resetForm();
-  localStorage.clear();
+  useFormsStore.setState({ forms: [], isLoading: false, error: null });
 });
 
 describe("FormBuilder page", () => {
@@ -115,5 +124,39 @@ describe("FormBuilder page", () => {
     await user.selectOptions(stepSelect, sectionId);
 
     expect(useFormStore.getState().fields[0].sectionId).toBe(sectionId);
+  });
+
+  it("saves a new form via the API and records its assigned id", async () => {
+    createForm.mockImplementation((payload) => Promise.resolve(payload));
+    const user = userEvent.setup();
+    useFormStore.getState().loadSchema({
+      formName: "Feedback",
+      fields: [{ id: "field_1", type: "text", label: "Comment" }],
+    });
+    renderBuilder();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Form saved.")).toBeInTheDocument();
+    expect(createForm).toHaveBeenCalledWith(
+      expect.objectContaining({ formName: "Feedback", status: "Draft" })
+    );
+    expect(useFormStore.getState().id).toEqual(expect.any(String));
+  });
+
+  it("publishes a form, setting its status to Published", async () => {
+    createForm.mockImplementation((payload) => Promise.resolve(payload));
+    updateForm.mockImplementation((id, payload) => Promise.resolve(payload));
+    const user = userEvent.setup();
+    useFormStore.getState().loadSchema({
+      formName: "Feedback",
+      fields: [{ id: "field_1", type: "text", label: "Comment" }],
+    });
+    renderBuilder();
+
+    await user.click(screen.getByRole("button", { name: "Publish" }));
+
+    expect(await screen.findByText("Form published.")).toBeInTheDocument();
+    expect(useFormStore.getState().status).toBe("Published");
   });
 });

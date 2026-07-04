@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import MySubmissions from "./mySubmissions";
 import { useSubmissionStore } from "../store/submissionStore";
-import { useAuthStore, MOCK_USERS } from "../store/authStore";
+import { useAuthStore } from "../store/authStore";
 import { getSubmissions } from "../services/submissionService";
 
 vi.mock("../services/submissionService", () => ({

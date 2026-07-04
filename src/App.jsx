@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
+import Forms from "./pages/forms";
 import FormBuilder from "./pages/formbuilder";
 import Workflow from "./pages/workflow";
 import Preview from "./pages/preview";
@@ -23,6 +24,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/forms" element={<Forms />} />
             <Route path="/form-builder" element={<FormBuilder />} />
             <Route path="/workflow" element={<Workflow />} />
             <Route path="/preview" element={<Preview />} />

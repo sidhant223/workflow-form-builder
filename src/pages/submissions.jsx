@@ -72,9 +72,20 @@ function Submissions({ mode = "all" }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+  const updateSearch = (value) => {
+    setSearch(value);
     setPage(1);
-  }, [search, dateFilter, statusFilter, mode]);
+  };
+
+  const updateDateFilter = (value) => {
+    setDateFilter(value);
+    setPage(1);
+  };
+
+  const updateStatusFilter = (value) => {
+    setStatusFilter(value);
+    setPage(1);
+  };
 
   const filtered = useMemo(
     () =>
@@ -110,13 +121,13 @@ function Submissions({ mode = "all" }) {
         <input
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => updateSearch(e.target.value)}
           placeholder="Search by name, form, or email…"
           className="flex-1 min-w-[200px] rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
         />
         <select
           value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
+          onChange={(e) => updateDateFilter(e.target.value)}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
         >
           {DATE_FILTERS.map((f) => (
@@ -128,7 +139,7 @@ function Submissions({ mode = "all" }) {
         <select
           aria-label="Filter by status"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => updateStatusFilter(e.target.value)}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
         >
           {STATUS_FILTERS.map((f) => (

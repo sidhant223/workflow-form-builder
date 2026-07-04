@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { canPerformAction, canConfigureWorkflows } from "./rolePermissions";
+import { canPerformAction, canConfigureWorkflows, canManageForms } from "./rolePermissions";
 
 describe("canPerformAction", () => {
   it("lets Employees only advance (submit)", () => {
@@ -30,5 +30,13 @@ describe("canConfigureWorkflows", () => {
     expect(canConfigureWorkflows("Admin")).toBe(true);
     expect(canConfigureWorkflows("Manager")).toBe(false);
     expect(canConfigureWorkflows("Employee")).toBe(false);
+  });
+});
+
+describe("canManageForms", () => {
+  it("only Admins can create, edit, or delete forms", () => {
+    expect(canManageForms("Admin")).toBe(true);
+    expect(canManageForms("Manager")).toBe(false);
+    expect(canManageForms("Employee")).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useFormStore } from "../store/formStore";
+import { useFormsStore } from "../store/formsStore";
 import { exampleEmployeeForm } from "../schemas/formSchema";
 import FieldPalette from "../components/builder/FieldPalette";
 import SortableCanvas from "../components/builder/SortableCanvas";
@@ -11,11 +12,19 @@ import StepManagerPanel from "../components/builder/StepManagerPanel";
 import TemplatePickerModal from "../components/builder/TemplatePickerModal";
 import Button from "../components/ui/button";
 import Badge from "../components/ui/badge";
+import Toast from "../components/ui/toast";
 
 function FormBuilder() {
+  const id = useFormStore((s) => s.id);
+  const status = useFormStore((s) => s.status);
   const fields = useFormStore((s) => s.fields);
+  const sections = useFormStore((s) => s.sections);
   const selectedFieldId = useFormStore((s) => s.selectedFieldId);
   const formName = useFormStore((s) => s.formName);
+  const formDescription = useFormStore((s) => s.formDescription);
+  const createdBy = useFormStore((s) => s.createdBy);
+  const version = useFormStore((s) => s.version);
+  const workflowId = useFormStore((s) => s.workflowId);
   const addField = useFormStore((s) => s.addField);
   const removeField = useFormStore((s) => s.removeField);
   const selectField = useFormStore((s) => s.selectField);
@@ -23,7 +32,34 @@ function FormBuilder() {
   const reorderFields = useFormStore((s) => s.reorderFields);
   const resetForm = useFormStore((s) => s.resetForm);
   const loadSchema = useFormStore((s) => s.loadSchema);
+  const updateFormMetadata = useFormStore((s) => s.updateFormMetadata);
+  const saveForm = useFormsStore((s) => s.saveForm);
   const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const handleSave = async (nextStatus = status) => {
+    setIsSaving(true);
+    const result = await saveForm({
+      id,
+      formName,
+      formDescription,
+      createdBy,
+      version,
+      workflowId,
+      fields,
+      sections,
+      status: nextStatus,
+    });
+    setIsSaving(false);
+
+    if (result.success) {
+      updateFormMetadata({ id: result.form.id, status: result.form.status });
+      setToastMessage(nextStatus === "Published" ? "Form published." : "Form saved.");
+    } else {
+      setToastMessage(result.error || "Unable to save the form. Please try again.");
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -87,6 +123,22 @@ function FormBuilder() {
             >
               Reset
             </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleSave()}
+              disabled={isSaving || fields.length === 0}
+            >
+              {isSaving ? "Saving…" : "Save"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSave("Published")}
+              disabled={isSaving || fields.length === 0}
+            >
+              Publish
+            </Button>
             <Link to="/preview">
               <Button size="sm">Preview →</Button>
             </Link>
@@ -141,6 +193,10 @@ function FormBuilder() {
         onClose={() => setTemplateModalOpen(false)}
         onSelect={(template) => loadSchema(template)}
       />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
     </DndContext>
   );
 }

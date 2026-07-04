@@ -28,6 +28,8 @@ export const useFormStore = create(
   persist(
     (set) => ({
       // Form metadata
+      id: null,
+      status: "Draft",
       formName: "",
       formDescription: "",
       createdBy: "",
@@ -143,6 +145,8 @@ export const useFormStore = create(
       // Reset form
       resetForm: () =>
         set({
+          id: null,
+          status: "Draft",
           fields: [],
           sections: [],
           selectedFieldId: null,
@@ -161,6 +165,8 @@ export const useFormStore = create(
           const fieldCount = data.fields ? data.fields.length : 0;
           const sectionCount = data.sections ? data.sections.length : 0;
           return {
+            id: data.id || null,
+            status: data.status || "Draft",
             fields: data.fields || [],
             sections: data.sections || [],
             selectedFieldId: null,
@@ -177,6 +183,8 @@ export const useFormStore = create(
     {
       name: "form-builder-schema",
       partialize: (state) => ({
+        id: state.id,
+        status: state.status,
         fields: state.fields,
         sections: state.sections,
         formName: state.formName,
