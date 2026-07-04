@@ -1,5 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useSubmissionStore } from "./submissionStore";
+
+vi.mock("../services/submissionService", () => ({
+  getSubmissions: vi.fn().mockResolvedValue([]),
+  createSubmission: vi.fn().mockResolvedValue({}),
+  updateSubmission: vi.fn().mockResolvedValue({}),
+}));
 
 const FIELDS = [
   { id: "field_1", type: "text", label: "Name" },
@@ -7,8 +13,7 @@ const FIELDS = [
 ];
 
 beforeEach(() => {
-  useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
-  localStorage.clear();
+  useSubmissionStore.setState({ submissions: [], isLoading: false, error: null });
 });
 
 describe("useSubmissionStore", () => {
@@ -140,5 +145,39 @@ describe("useSubmissionStore", () => {
 
     const updated = useSubmissionStore.getState().submissions.find((s) => s.id === record.id);
     expect(updated.assignedTo).toBe("Morgan (Manager)");
+  });
+
+  describe("fetchSubmissions", () => {
+    it("loads submissions from the API", async () => {
+      const { getSubmissions } = await import("../services/submissionService");
+      getSubmissions.mockResolvedValueOnce([{ id: "s1", formName: "Leave Request" }]);
+
+      await useSubmissionStore.getState().fetchSubmissions();
+
+      expect(useSubmissionStore.getState().submissions).toEqual([
+        { id: "s1", formName: "Leave Request" },
+      ]);
+      expect(useSubmissionStore.getState().isLoading).toBe(false);
+      expect(useSubmissionStore.getState().error).toBeNull();
+    });
+
+    it("sets an error message when the request fails", async () => {
+      const { getSubmissions } = await import("../services/submissionService");
+      getSubmissions.mockRejectedValueOnce({ message: "Network Error" });
+
+      await useSubmissionStore.getState().fetchSubmissions();
+
+      expect(useSubmissionStore.getState().error).toBe("Network Error");
+      expect(useSubmissionStore.getState().isLoading).toBe(false);
+    });
+  });
+
+  it("persists a new submission to the API", async () => {
+    const { createSubmission } = await import("../services/submissionService");
+    const record = useSubmissionStore
+      .getState()
+      .addSubmission({ formId: "f", formName: "F", responses: {}, fields: [] });
+
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ id: record.id }));
   });
 });

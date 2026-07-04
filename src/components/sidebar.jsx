@@ -1,15 +1,11 @@
 import { NavLink } from "react-router-dom";
-
-const menuItems = [
-  { name: "Dashboard", path: "/dashboard", icon: "🏠" },
-  { name: "Form Builder", path: "/form-builder", icon: "🧾" },
-  { name: "Workflow", path: "/workflow", icon: "🔗" },
-  { name: "Preview", path: "/preview", icon: "👁️" },
-  { name: "Submissions", path: "/submissions", icon: "📥" },
-  { name: "Components", path: "/components", icon: "🧩" },
-];
+import { useCurrentUser } from "../store/authStore";
+import { getNavItemsForRole } from "../navigation/navItems";
 
 function Sidebar({ isOpen, closeSidebar }) {
+  const currentUser = useCurrentUser();
+  const menuItems = getNavItemsForRole(currentUser.role);
+
   return (
     <aside
       className={`fixed left-0 top-0 z-40 h-screen w-64 bg-slate-950 text-white transition-transform duration-300 md:static md:translate-x-0 ${
@@ -47,8 +43,8 @@ function Sidebar({ isOpen, closeSidebar }) {
             👤
           </div>
           <div>
-            <p className="text-sm font-medium">Admin User</p>
-            <p className="text-xs text-slate-400">admin@example.com</p>
+            <p className="text-sm font-medium">{currentUser.name}</p>
+            <p className="text-xs text-slate-400">{currentUser.email}</p>
           </div>
         </div>
       </div>

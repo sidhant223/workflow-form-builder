@@ -63,6 +63,59 @@ describe("filterSubmissions", () => {
   it("returns everything for dateFilter 'all' and empty search", () => {
     expect(filterSubmissions(submissions, { now })).toEqual(submissions);
   });
+
+  it("matches search against response values (e.g. an email field)", () => {
+    const withResponses = [
+      { ...submissions[0], responses: { email: "jane@test.com" } },
+      { ...submissions[1], responses: { email: "alice@test.com" } },
+    ];
+    expect(filterSubmissions(withResponses, { search: "jane@test.com", now })).toEqual([
+      withResponses[0],
+    ]);
+  });
+
+  describe("statusFilter", () => {
+    const withStages = [
+      { ...submissions[0], stage: "Approved" },
+      { ...submissions[1], stage: "Rejected" },
+      { id: "3", displayName: "Bob", formName: "Feedback", submittedAt: submissions[0].submittedAt, stage: "Manager Review" },
+    ];
+
+    it("keeps only Approved submissions", () => {
+      expect(filterSubmissions(withStages, { statusFilter: "approved", now })).toEqual([
+        withStages[0],
+      ]);
+    });
+
+    it("keeps only Rejected submissions", () => {
+      expect(filterSubmissions(withStages, { statusFilter: "rejected", now })).toEqual([
+        withStages[1],
+      ]);
+    });
+
+    it("keeps Pending submissions (any non-terminal stage)", () => {
+      expect(filterSubmissions(withStages, { statusFilter: "pending", now })).toEqual([
+        withStages[2],
+      ]);
+    });
+  });
+
+  describe("mode", () => {
+    const bySubmitter = [
+      { ...submissions[0], submittedBy: "Jamie (Employee)", stage: "Draft" },
+      { ...submissions[1], submittedBy: "Alex (Admin)", stage: "Approved" },
+    ];
+
+    it("mode 'mine' keeps only the current user's own submissions", () => {
+      expect(
+        filterSubmissions(bySubmitter, { mode: "mine", currentUserName: "Jamie (Employee)", now })
+      ).toEqual([bySubmitter[0]]);
+    });
+
+    it("mode 'pending' keeps only non-terminal-stage submissions", () => {
+      expect(filterSubmissions(bySubmitter, { mode: "pending", now })).toEqual([bySubmitter[0]]);
+    });
+  });
 });
 
 describe("initialStage", () => {

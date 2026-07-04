@@ -3,13 +3,20 @@
 // Configure workflow definitions: name, add/edit/delete/reorder stages.
 // Only the simulated Admin role can edit; other roles see a read-only view.
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useWorkflowStore } from "../store/workflowStore";
 import { useCurrentUser } from "../store/authStore";
 import { canConfigureWorkflows } from "../workflow/rolePermissions";
+import { paginate } from "../utils/pagination";
 import WorkflowStageEditor from "../components/workflow/WorkflowStageEditor";
 import Badge from "../components/ui/badge";
 import Button from "../components/ui/button";
+import Spinner from "../components/ui/spinner";
+import ErrorBanner from "../components/ui/errorBanner";
+import EmptyState from "../components/ui/emptyState";
+import Pagination from "../components/ui/pagination";
+
+const PAGE_SIZE = 5;
 
 function ReadOnlyWorkflowCard({ workflow }) {
   return (
@@ -26,11 +33,25 @@ function ReadOnlyWorkflowCard({ workflow }) {
 
 function Workflow() {
   const workflows = useWorkflowStore((s) => s.workflows);
+  const isLoading = useWorkflowStore((s) => s.isLoading);
+  const error = useWorkflowStore((s) => s.error);
+  const fetchWorkflows = useWorkflowStore((s) => s.fetchWorkflows);
   const addWorkflow = useWorkflowStore((s) => s.addWorkflow);
   const removeWorkflow = useWorkflowStore((s) => s.removeWorkflow);
   const currentUser = useCurrentUser();
   const canConfigure = canConfigureWorkflows(currentUser.role);
   const [newWorkflowName, setNewWorkflowName] = useState("");
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    fetchWorkflows();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { items: visible, totalPages } = useMemo(
+    () => paginate(workflows, page, PAGE_SIZE),
+    [workflows, page]
+  );
 
   const handleCreate = () => {
     if (!newWorkflowName.trim()) return;
@@ -67,13 +88,14 @@ function Workflow() {
       )}
 
       <div className="mt-6 space-y-4">
-        {workflows.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-12 text-center text-gray-400">
-            <span className="mb-2 text-3xl">🗂️</span>
-            <p className="font-medium">No workflows configured yet</p>
-          </div>
+        {isLoading ? (
+          <Spinner label="Loading workflows…" />
+        ) : error ? (
+          <ErrorBanner message={error} onRetry={fetchWorkflows} />
+        ) : workflows.length === 0 ? (
+          <EmptyState icon="🗂️" title="No workflows configured yet" />
         ) : canConfigure ? (
-          workflows.map((workflow) => (
+          visible.map((workflow) => (
             <WorkflowStageEditor
               key={workflow.id}
               workflow={workflow}
@@ -81,11 +103,15 @@ function Workflow() {
             />
           ))
         ) : (
-          workflows.map((workflow) => (
+          visible.map((workflow) => (
             <ReadOnlyWorkflowCard key={workflow.id} workflow={workflow} />
           ))
         )}
       </div>
+
+      {!isLoading && !error && workflows.length > 0 && (
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      )}
     </div>
   );
 }

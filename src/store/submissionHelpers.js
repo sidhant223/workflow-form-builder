@@ -25,9 +25,22 @@ export function buildHistoryEntry({ stage, action, user, comment = "", timestamp
   };
 }
 
+function isPending(submission) {
+  if (!submission.stage) return false;
+  const stage = submission.stage.toLowerCase();
+  return stage !== "approved" && stage !== "rejected";
+}
+
 export function filterSubmissions(
   submissions,
-  { search = "", dateFilter = "all", now = Date.now() } = {}
+  {
+    search = "",
+    dateFilter = "all",
+    statusFilter = "all",
+    mode = "all",
+    currentUserName = "",
+    now = Date.now(),
+  } = {}
 ) {
   const term = search.trim().toLowerCase();
 
@@ -35,15 +48,30 @@ export function filterSubmissions(
     const matchesSearch =
       !term ||
       submission.displayName.toLowerCase().includes(term) ||
-      submission.formName.toLowerCase().includes(term);
-
+      submission.formName.toLowerCase().includes(term) ||
+      Object.values(submission.responses || {}).some(
+        (value) => typeof value === "string" && value.toLowerCase().includes(term)
+      );
     if (!matchesSearch) return false;
-    if (dateFilter === "all") return true;
 
-    const days = FILTER_DAYS[dateFilter];
-    if (!days) return true;
+    if (dateFilter !== "all") {
+      const days = FILTER_DAYS[dateFilter];
+      if (days) {
+        const submittedAt = new Date(submission.submittedAt).getTime();
+        if (submittedAt < now - days * DAY_MS) return false;
+      }
+    }
 
-    const submittedAt = new Date(submission.submittedAt).getTime();
-    return submittedAt >= now - days * DAY_MS;
+    if (statusFilter !== "all") {
+      const stage = (submission.stage || "").toLowerCase();
+      if (statusFilter === "approved" && stage !== "approved") return false;
+      if (statusFilter === "rejected" && stage !== "rejected") return false;
+      if (statusFilter === "pending" && !isPending(submission)) return false;
+    }
+
+    if (mode === "mine" && submission.submittedBy !== currentUserName) return false;
+    if (mode === "pending" && !isPending(submission)) return false;
+
+    return true;
   });
 }

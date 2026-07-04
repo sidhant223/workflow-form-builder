@@ -8,6 +8,9 @@ import FormBuilder from "./pages/formbuilder";
 import Workflow from "./pages/workflow";
 import Preview from "./pages/preview";
 import Submissions from "./pages/submissions";
+import PendingApprovals from "./pages/pendingApprovals";
+import MySubmissions from "./pages/mySubmissions";
+import UserManagement from "./pages/userManagement";
 import Components from "./pages/components";
 
 function App() {
@@ -24,6 +27,9 @@ function App() {
             <Route path="/workflow" element={<Workflow />} />
             <Route path="/preview" element={<Preview />} />
             <Route path="/submissions" element={<Submissions />} />
+            <Route path="/pending-approvals" element={<PendingApprovals />} />
+            <Route path="/my-submissions" element={<MySubmissions />} />
+            <Route path="/user-management" element={<UserManagement />} />
             <Route path="/components" element={<Components />} />
           </Route>
         </Route>

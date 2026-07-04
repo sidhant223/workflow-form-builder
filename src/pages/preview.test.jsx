@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -7,6 +7,12 @@ import { useFormStore } from "../store/formStore";
 import { useSubmissionStore } from "../store/submissionStore";
 import { useWorkflowStore } from "../store/workflowStore";
 import { useAuthStore, MOCK_USERS } from "../store/authStore";
+
+vi.mock("../services/submissionService", () => ({
+  getSubmissions: vi.fn().mockResolvedValue([]),
+  createSubmission: vi.fn().mockResolvedValue({}),
+  updateSubmission: vi.fn().mockResolvedValue({}),
+}));
 
 function renderPreview() {
   return render(
@@ -18,9 +24,8 @@ function renderPreview() {
 
 beforeEach(() => {
   useFormStore.getState().resetForm();
-  useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
+  useSubmissionStore.setState({ submissions: [], isLoading: false, error: null });
   useAuthStore.setState({ currentUserId: MOCK_USERS[0].id });
-  localStorage.clear();
 });
 
 describe("Preview page", () => {

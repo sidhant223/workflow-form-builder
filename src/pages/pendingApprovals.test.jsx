@@ -1,38 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import Dashboard from "./dashboard";
+import PendingApprovals from "./pendingApprovals";
 import { useSubmissionStore } from "../store/submissionStore";
 import { useWorkflowStore } from "../store/workflowStore";
+import { useAuthStore, MOCK_USERS } from "../store/authStore";
 import { DEFAULT_WORKFLOWS } from "../schemas/workflowSchema";
+import { getSubmissions } from "../services/submissionService";
 
 vi.mock("../services/submissionService", () => ({
-  getSubmissions: vi.fn().mockResolvedValue([]),
+  getSubmissions: vi.fn(),
   createSubmission: vi.fn().mockResolvedValue({}),
   updateSubmission: vi.fn().mockResolvedValue({}),
 }));
 
-function renderDashboard() {
-  return render(
-    <MemoryRouter>
-      <Dashboard />
-    </MemoryRouter>
-  );
-}
-
 beforeEach(() => {
   useSubmissionStore.setState({ submissions: [], isLoading: false, error: null });
   useWorkflowStore.setState({ workflows: DEFAULT_WORKFLOWS, nextId: 1 });
+  useAuthStore.setState({ currentUserId: MOCK_USERS[0].id });
+  getSubmissions.mockImplementation(() =>
+    Promise.resolve(useSubmissionStore.getState().submissions)
+  );
 });
 
-describe("Dashboard", () => {
-  it("shows all-zero KPI cards and an empty state with no submissions", () => {
-    renderDashboard();
-    expect(screen.getByText("Pending Reviews")).toBeInTheDocument();
-    expect(screen.getAllByText("No submissions yet.").length).toBeGreaterThan(0);
-  });
-
-  it("computes real KPI values from submissions and lists recent ones", () => {
+describe("PendingApprovals page", () => {
+  it("only shows submissions that are still pending review", async () => {
     const workflowId = useWorkflowStore.getState().workflows[0].id;
     const stages = useWorkflowStore.getState().workflows[0].stages;
 
@@ -48,18 +39,14 @@ describe("Dashboard", () => {
     useSubmissionStore.getState().addSubmission({
       formId: "feedback",
       formName: "Feedback",
-      responses: {},
-      fields: [],
+      responses: { field_1: "Alice Smith" },
+      fields: [{ id: "field_1", type: "text" }],
     });
 
-    renderDashboard();
+    render(<PendingApprovals />);
 
-    expect(screen.getByText("Leave Request")).toBeInTheDocument();
-    expect(screen.getByText("Feedback")).toBeInTheDocument();
-    expect(screen.getByText("Draft")).toBeInTheDocument(); // stage badge for the workflow submission
-
-    // Draft Forms KPI card should read 1
-    const draftCard = screen.getByText("Draft Forms").closest("div").parentElement;
-    expect(draftCard.textContent).toContain("1");
+    expect(await screen.findByText("Jane Doe")).toBeInTheDocument();
+    expect(screen.queryByText("Alice Smith")).not.toBeInTheDocument();
+    expect(screen.getByText("Pending Approvals")).toBeInTheDocument();
   });
 });

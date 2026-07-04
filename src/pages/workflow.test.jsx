@@ -1,21 +1,36 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Workflow from "./workflow";
 import { useWorkflowStore } from "../store/workflowStore";
 import { useAuthStore, MOCK_USERS } from "../store/authStore";
 import { DEFAULT_WORKFLOWS } from "../schemas/workflowSchema";
+import { getWorkflows } from "../services/workflowService";
+
+vi.mock("../services/workflowService", () => ({
+  getWorkflows: vi.fn(),
+  createWorkflow: vi.fn().mockResolvedValue({}),
+  updateWorkflow: vi.fn().mockResolvedValue({}),
+  deleteWorkflow: vi.fn().mockResolvedValue({}),
+}));
 
 beforeEach(() => {
-  useWorkflowStore.setState({ workflows: DEFAULT_WORKFLOWS, nextId: 1 });
+  useWorkflowStore.setState({
+    workflows: DEFAULT_WORKFLOWS,
+    nextId: 1,
+    isLoading: false,
+    error: null,
+  });
   useAuthStore.setState({ currentUserId: MOCK_USERS[0].id }); // Admin
-  localStorage.clear();
+  // The page fetches on mount; resolve it with whatever the test already
+  // seeded into the store so the fetch behaves like a same-data refresh.
+  getWorkflows.mockImplementation(() => Promise.resolve(useWorkflowStore.getState().workflows));
 });
 
 describe("Workflow configuration page (Admin)", () => {
-  it("lists the default workflow with editable stage inputs", () => {
+  it("lists the default workflow with editable stage inputs", async () => {
     render(<Workflow />);
-    expect(screen.getByDisplayValue("Leave Approval")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("Leave Approval")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Draft")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Manager Review")).toBeInTheDocument();
   });
@@ -23,6 +38,7 @@ describe("Workflow configuration page (Admin)", () => {
   it("creates a new workflow with default stages", async () => {
     const user = userEvent.setup();
     render(<Workflow />);
+    await screen.findByDisplayValue("Leave Approval");
 
     await user.type(screen.getByPlaceholderText("New workflow name"), "Purchase Approval");
     await user.click(screen.getByRole("button", { name: "+ New Workflow" }));
@@ -34,6 +50,7 @@ describe("Workflow configuration page (Admin)", () => {
   it("adds, edits, and deletes a stage", async () => {
     const user = userEvent.setup();
     render(<Workflow />);
+    await screen.findByDisplayValue("Leave Approval");
     const workflowId = useWorkflowStore.getState().workflows[0].id;
 
     await user.type(screen.getByPlaceholderText("New stage name"), "Final Sign-off");
@@ -55,6 +72,7 @@ describe("Workflow configuration page (Admin)", () => {
   it("deletes a whole workflow", async () => {
     const user = userEvent.setup();
     render(<Workflow />);
+    await screen.findByDisplayValue("Leave Approval");
 
     await user.click(screen.getByRole("button", { name: "🗑️ Delete Workflow" }));
 
@@ -64,13 +82,13 @@ describe("Workflow configuration page (Admin)", () => {
 });
 
 describe("Workflow configuration page (non-Admin)", () => {
-  it("shows a read-only view for a Manager", () => {
+  it("shows a read-only view for a Manager", async () => {
     useAuthStore.setState({ currentUserId: "user_manager" });
     render(<Workflow />);
 
     expect(screen.getByText(/Only Admins can configure workflows/)).toBeInTheDocument();
     expect(screen.queryByPlaceholderText("New workflow name")).not.toBeInTheDocument();
-    expect(screen.getByText("Leave Approval")).toBeInTheDocument();
+    expect(await screen.findByText("Leave Approval")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
   });
 });

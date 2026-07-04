@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Submissions from "./submissions";
@@ -6,12 +6,23 @@ import { useSubmissionStore } from "../store/submissionStore";
 import { useWorkflowStore } from "../store/workflowStore";
 import { useAuthStore, MOCK_USERS } from "../store/authStore";
 import { DEFAULT_WORKFLOWS } from "../schemas/workflowSchema";
+import { getSubmissions } from "../services/submissionService";
+
+vi.mock("../services/submissionService", () => ({
+  getSubmissions: vi.fn(),
+  createSubmission: vi.fn().mockResolvedValue({}),
+  updateSubmission: vi.fn().mockResolvedValue({}),
+}));
 
 beforeEach(() => {
-  useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
+  useSubmissionStore.setState({ submissions: [], isLoading: false, error: null });
   useWorkflowStore.setState({ workflows: DEFAULT_WORKFLOWS, nextId: 1 });
   useAuthStore.setState({ currentUserId: MOCK_USERS[0].id });
-  localStorage.clear();
+  // The page fetches on mount; resolve it with whatever the test already
+  // seeded into the store so the fetch behaves like a same-data refresh.
+  getSubmissions.mockImplementation(() =>
+    Promise.resolve(useSubmissionStore.getState().submissions)
+  );
 });
 
 function seedSubmissions() {
@@ -36,16 +47,16 @@ function seedSubmissions() {
 }
 
 describe("Submissions page", () => {
-  it("shows an empty state when there are no submissions", () => {
+  it("shows an empty state when there are no submissions", async () => {
     render(<Submissions />);
-    expect(screen.getByText("No submissions yet")).toBeInTheDocument();
+    expect(await screen.findByText("No submissions yet")).toBeInTheDocument();
   });
 
-  it("lists every submission with its respondent name and form name", () => {
+  it("lists every submission with its respondent name and form name", async () => {
     seedSubmissions();
     render(<Submissions />);
 
-    expect(screen.getByText("Jane Doe")).toBeInTheDocument();
+    expect(await screen.findByText("Jane Doe")).toBeInTheDocument();
     expect(screen.getByText("Alice Smith")).toBeInTheDocument();
   });
 
@@ -54,7 +65,7 @@ describe("Submissions page", () => {
     const user = userEvent.setup();
     render(<Submissions />);
 
-    await user.type(screen.getByPlaceholderText(/Search by name or form/i), "jane");
+    await user.type(await screen.findByPlaceholderText(/Search by name/i), "jane");
 
     expect(screen.getByText("Jane Doe")).toBeInTheDocument();
     expect(screen.queryByText("Alice Smith")).not.toBeInTheDocument();
@@ -65,7 +76,7 @@ describe("Submissions page", () => {
     const user = userEvent.setup();
     render(<Submissions />);
 
-    const janeRow = screen.getByText("Jane Doe").closest(".border-b");
+    const janeRow = (await screen.findByText("Jane Doe")).closest(".border-b");
     await user.click(within(janeRow).getByRole("button", { name: "View Details" }));
 
     expect(screen.getByText("Submission Details")).toBeInTheDocument();
@@ -95,7 +106,7 @@ describe("Submissions page — workflow status and actions", () => {
     const user = userEvent.setup();
     render(<Submissions />);
 
-    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(await screen.findByText("Draft")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "View Details" }));
     expect(screen.getByText("Current Status")).toBeInTheDocument();
@@ -130,7 +141,7 @@ describe("Submissions page — workflow status and actions", () => {
     const user = userEvent.setup();
     render(<Submissions />);
 
-    await user.click(screen.getByRole("button", { name: "View Details" }));
+    await user.click(await screen.findByRole("button", { name: "View Details" }));
     await user.selectOptions(screen.getByLabelText("Assigned To"), "Morgan (Manager)");
 
     expect(useSubmissionStore.getState().submissions[0].assignedTo).toBe("Morgan (Manager)");
