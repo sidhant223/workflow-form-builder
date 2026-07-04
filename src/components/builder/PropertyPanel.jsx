@@ -1,9 +1,11 @@
 import { useFormStore, useSelectedField } from "../../store/formStore";
 import { OPTION_FIELD_TYPES } from "../../schemas/formSchema";
+import ConditionalPanel from "./ConditionalPanel";
 
 export default function PropertyPanel() {
   const selectedField = useSelectedField();
   const { updateField, removeField, duplicateField } = useFormStore();
+  const sections = useFormStore((s) => s.sections);
 
   if (!selectedField) {
     return (
@@ -125,6 +127,106 @@ export default function PropertyPanel() {
         </label>
       </div>
 
+      {/* Step assignment (multi-step forms) */}
+      {sections.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Step</label>
+          <select
+            value={selectedField.sectionId || sections[0].id}
+            onChange={(e) => handleChange("sectionId", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          >
+            {sections.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Length validation (text-like fields) */}
+      {["text", "textarea", "password", "email"].includes(selectedField.type) && (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Min Length</label>
+            <input
+              type="number"
+              min="0"
+              value={selectedField.minLength ?? ""}
+              onChange={(e) =>
+                handleChange("minLength", e.target.value ? Number(e.target.value) : undefined)
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Max Length</label>
+            <input
+              type="number"
+              min="0"
+              value={selectedField.maxLength ?? ""}
+              onChange={(e) =>
+                handleChange("maxLength", e.target.value ? Number(e.target.value) : undefined)
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Regex pattern (plain text fields only — email already has built-in format validation) */}
+      {["text", "textarea"].includes(selectedField.type) && (
+        <div className="space-y-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Regex Pattern</label>
+            <input
+              type="text"
+              value={selectedField.pattern ?? ""}
+              onChange={(e) => handleChange("pattern", e.target.value)}
+              placeholder="e.g. ^[0-9]{10}$"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Pattern Error Message
+            </label>
+            <input
+              type="text"
+              value={selectedField.patternMessage ?? ""}
+              onChange={(e) => handleChange("patternMessage", e.target.value)}
+              placeholder="10 digits only"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Numeric range (number fields) */}
+      {selectedField.type === "number" && (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Value</label>
+            <input
+              type="number"
+              value={selectedField.min ?? ""}
+              onChange={(e) => handleChange("min", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Value</label>
+            <input
+              type="number"
+              value={selectedField.max ?? ""}
+              onChange={(e) => handleChange("max", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Options (for select/radio) */}
       {OPTION_FIELD_TYPES.includes(selectedField.type) && (
         <div className="pt-4 border-t">
@@ -158,6 +260,8 @@ export default function PropertyPanel() {
           </button>
         </div>
       )}
+
+      <ConditionalPanel field={selectedField} />
     </div>
   );
 }
