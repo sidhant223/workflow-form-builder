@@ -1,30 +1,38 @@
 // src/pages/preview.jsx
 // Route: /preview
-// Renders the final, interactive form straight from the builder schema using the
-// same FormRenderer engine as the canvas — plus a working Submit button.
-// (No validation yet — that lands in a later week.)
+// Renders the final, interactive form via FormRenderer (react-hook-form-backed,
+// validation + conditional fields + multi-step aware). On successful submit,
+// records the response in the submission store and shows a Thank You screen.
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useFormStore } from "../store/formStore";
+import { useSubmissionStore } from "../store/submissionStore";
+import { slugify } from "../utils/slugify";
 import FormRenderer from "../renderer/FormRenderer";
 import JSONViewer from "../components/viewer/JSONViewer";
+import Button from "../components/ui/button";
 
 function Preview() {
   const fields = useFormStore((s) => s.fields);
+  const sections = useFormStore((s) => s.sections);
   const formName = useFormStore((s) => s.formName);
   const formDescription = useFormStore((s) => s.formDescription);
   const createdBy = useFormStore((s) => s.createdBy);
   const version = useFormStore((s) => s.version);
-  const [submitted, setSubmitted] = useState(null);
+  const addSubmission = useSubmissionStore((s) => s.addSubmission);
+  const [submittedRecord, setSubmittedRecord] = useState(null);
 
-  const schemaData = {
-    formName,
-    formDescription,
-    createdBy,
-    version,
-    fields,
-    submittedData: submitted,
+  const schemaData = { formName, formDescription, createdBy, version, fields, sections };
+
+  const handleSubmit = (values) => {
+    const record = addSubmission({
+      formId: slugify(formName),
+      formName: formName || "Untitled Form",
+      responses: values,
+      fields,
+    });
+    setSubmittedRecord(record);
   };
 
   return (
@@ -43,60 +51,60 @@ function Preview() {
       </div>
 
       <div className="mx-auto max-w-xl">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          {formName && (
-            <div className="mb-6 pb-6 border-b">
-              <h1 className="text-2xl font-bold text-gray-900">{formName}</h1>
-              {formDescription && (
-                <p className="mt-2 text-gray-600">{formDescription}</p>
-              )}
-              {(createdBy || version) && (
-                <div className="mt-3 flex gap-4 text-xs text-gray-500">
-                  {createdBy && <span>By: {createdBy}</span>}
-                  {version && <span>v{version}</span>}
-                </div>
-              )}
-            </div>
-          )}
-
-          {fields.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-12 text-center">
-              <span className="mb-2 text-3xl">📭</span>
-              <p className="font-medium text-gray-500">No form to preview yet</p>
-              <p className="mb-4 text-sm text-gray-400">
-                Add some fields in the builder first.
-              </p>
-              <Link
-                to="/form-builder"
-                className="text-sm font-medium text-violet-600 hover:underline"
-              >
-                Go to Form Builder →
+        {submittedRecord ? (
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-8 text-center">
+            <p className="text-2xl font-bold text-green-800">Thank You</p>
+            <p className="mt-2 text-green-700">
+              Your response has been submitted successfully.
+            </p>
+            <p className="mt-4 text-sm text-gray-600">
+              Reference Number:{" "}
+              <span className="font-mono font-semibold text-gray-900">
+                {submittedRecord.referenceNumber}
+              </span>
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <Button variant="outline" onClick={() => setSubmittedRecord(null)}>
+                Submit Another Response
+              </Button>
+              <Link to="/submissions">
+                <Button variant="secondary">View Submissions</Button>
               </Link>
             </div>
-          ) : (
-            <FormRenderer
-              schema={fields}
-              showSubmit
-              submitLabel="Submit"
-              onSubmit={(values) => setSubmitted(values)}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+            {formName && (
+              <div className="mb-6 pb-6 border-b">
+                <h1 className="text-2xl font-bold text-gray-900">{formName}</h1>
+                {formDescription && <p className="mt-2 text-gray-600">{formDescription}</p>}
+                {(createdBy || version) && (
+                  <div className="mt-3 flex gap-4 text-xs text-gray-500">
+                    {createdBy && <span>By: {createdBy}</span>}
+                    {version && <span>v{version}</span>}
+                  </div>
+                )}
+              </div>
+            )}
 
-        {submitted && (
-          <div className="mx-auto mt-5 max-w-xl rounded-2xl border border-green-200 bg-green-50 p-5">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="font-semibold text-green-800">✅ Form submitted</p>
-              <button
-                onClick={() => setSubmitted(null)}
-                className="text-sm text-green-700 hover:underline"
-              >
-                Clear
-              </button>
-            </div>
-            <pre className="overflow-x-auto rounded-lg bg-white p-3 text-xs text-gray-700">
-              {JSON.stringify(submitted, null, 2)}
-            </pre>
+            {fields.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-12 text-center">
+                <span className="mb-2 text-3xl">📭</span>
+                <p className="font-medium text-gray-500">No form to preview yet</p>
+                <p className="mb-4 text-sm text-gray-400">Add some fields in the builder first.</p>
+                <Link to="/form-builder" className="text-sm font-medium text-violet-600 hover:underline">
+                  Go to Form Builder →
+                </Link>
+              </div>
+            ) : (
+              <FormRenderer
+                schema={fields}
+                sections={sections}
+                showSubmit
+                submitLabel="Submit"
+                onSubmit={handleSubmit}
+              />
+            )}
           </div>
         )}
       </div>
