@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { getAvailableActions, isValidTransition, isOutcomeStage } from "./workflowTransitions";
+import {
+  getAvailableActions,
+  isValidTransition,
+  isOutcomeStage,
+  getTimelineStages,
+} from "./workflowTransitions";
 
 const STAGES = ["Draft", "Submitted", "Manager Review", "Approved", "Rejected"];
 
@@ -61,5 +66,36 @@ describe("isValidTransition", () => {
 
   it("rejects moving out of a terminal stage", () => {
     expect(isValidTransition(STAGES, "Approved", "Rejected")).toBe(false);
+  });
+});
+
+describe("getTimelineStages", () => {
+  it("shows sequential stages plus a pending Approved before any decision", () => {
+    const history = [{ stage: "Draft" }, { stage: "Submitted" }, { stage: "Manager Review" }];
+    expect(getTimelineStages(STAGES, history)).toEqual([
+      "Draft",
+      "Submitted",
+      "Manager Review",
+      "Approved",
+    ]);
+  });
+
+  it("shows the actually-reached outcome once a decision is made", () => {
+    const history = [
+      { stage: "Draft" },
+      { stage: "Submitted" },
+      { stage: "Manager Review" },
+      { stage: "Rejected" },
+    ];
+    expect(getTimelineStages(STAGES, history)).toEqual([
+      "Draft",
+      "Submitted",
+      "Manager Review",
+      "Rejected",
+    ]);
+  });
+
+  it("omits the pending stage when the workflow has no Approved stage", () => {
+    expect(getTimelineStages(["Draft", "Rejected"], [])).toEqual(["Draft"]);
   });
 });
