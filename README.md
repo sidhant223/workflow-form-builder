@@ -178,6 +178,38 @@ FormRenderer  ──maps──►  DynamicField  ──registry lookup──► 
 - **Emoji icons** — visual indicators for field types
 - **Responsive design** — works on all screen sizes
 
+## Week 5 Features — Validation, Submission & Multi-Step Engine
+
+### Dynamic Validation
+- Schema-driven validation engine (`src/validation/buildValidationRules.js`)
+  generates react-hook-form rules from each field's flat schema properties:
+  required, min/max length, numeric range, email format, and custom regex.
+- `FormRenderer` is now built on `react-hook-form` (`useForm` + `Controller`),
+  with inline error messages rendered beneath each field.
+
+### Conditional Fields
+- Any field can declare `showIf: { field, value }` to only appear when another
+  field's live value matches. Configurable per field in the Property Panel.
+
+### Multi-Step Forms
+- Forms can be split into steps by reusing the builder's existing section
+  concept — assign each field to a step in the Property Panel. Multi-step forms
+  get Previous/Next navigation, a progress indicator, and an automatic
+  Review & Submit step.
+
+### Form Templates
+- Three ready-made templates (Employee Registration, Leave Request, Customer
+  Feedback) loadable from the Form Builder's "Use Template" button.
+
+### Submission Storage & Management
+- Every `/preview` submission is recorded (separate `submissionStore.js`,
+  localStorage-backed) with a generated reference number.
+- `/submissions` now shows real data: search by name/form, filter by date, and
+  view full response details per submission.
+
+See `WEEK5-IMPLEMENTATION.md` for the full write-up (validation research,
+architecture notes, testing strategy, and the demo/screenshot checklist).
+
 ## Routes
 
 | Route           | Page              |
