@@ -3,7 +3,7 @@
 
 import Textarea from "../../components/ui/textarea";
 
-export default function TextareaField({ field, value, onChange, disabled }) {
+export default function TextareaField({ field, value, onChange, error, disabled }) {
   return (
     <Textarea
       label={field.label}
@@ -11,6 +11,7 @@ export default function TextareaField({ field, value, onChange, disabled }) {
       helpText={field.helpText}
       required={field.required}
       disabled={disabled}
+      error={error}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
     />

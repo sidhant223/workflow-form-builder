@@ -1,15 +1,13 @@
 // src/renderer/DynamicField.jsx
 // Looks up a single field's component in the registry and renders it.
-// Acts as the bridge between a schema entry and a real, controlled React input.
-//
-// We resolve the component from the registry and mount it with createElement —
-// the registry holds stable, module-level components, so this is a lookup, not
-// a per-render component definition.
+// `onChange` is forwarded as-is (single new-value argument) — the caller
+// (FormRenderer, wired to react-hook-form's Controller) already knows which
+// field this is via the `name` it registered the Controller under.
 
 import { createElement } from "react";
 import { getFieldComponent } from "./fieldRegistry";
 
-export default function DynamicField({ field, value, onChange, disabled = false }) {
+export default function DynamicField({ field, value, onChange, error, disabled = false }) {
   const fieldComponent = getFieldComponent(field.type);
 
   if (!fieldComponent) {
@@ -24,6 +22,7 @@ export default function DynamicField({ field, value, onChange, disabled = false 
     field,
     value,
     disabled,
-    onChange: (next) => onChange(field.id, next),
+    error,
+    onChange,
   });
 }

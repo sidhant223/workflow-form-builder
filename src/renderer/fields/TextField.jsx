@@ -5,7 +5,7 @@
 
 import Input from "../../components/ui/input";
 
-export default function TextField({ field, value, onChange, disabled }) {
+export default function TextField({ field, value, onChange, error, disabled }) {
   return (
     <Input
       label={field.label}
@@ -14,6 +14,7 @@ export default function TextField({ field, value, onChange, disabled }) {
       helpText={field.helpText}
       required={field.required}
       disabled={disabled}
+      error={error}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
     />

@@ -3,12 +3,13 @@
 
 import Select from "../../components/ui/select";
 
-export default function SelectField({ field, value, onChange, disabled }) {
+export default function SelectField({ field, value, onChange, error, disabled }) {
   return (
     <Select
       label={field.label}
       required={field.required}
       disabled={disabled}
+      error={error}
       placeholder={field.placeholder || "Select an option"}
       options={field.options || []}
       value={value ?? ""}

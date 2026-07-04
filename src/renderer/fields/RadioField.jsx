@@ -4,7 +4,7 @@
 
 import Radio from "../../components/ui/radio";
 
-export default function RadioField({ field, value, onChange, disabled }) {
+export default function RadioField({ field, value, onChange, error, disabled }) {
   const options = field.options || [];
 
   return (
@@ -27,6 +27,7 @@ export default function RadioField({ field, value, onChange, disabled }) {
           />
         ))}
       </div>
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 }

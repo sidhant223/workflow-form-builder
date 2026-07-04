@@ -4,7 +4,7 @@
 
 import Checkbox from "../../components/ui/checkbox";
 
-export default function CheckboxField({ field, value, onChange, disabled }) {
+export default function CheckboxField({ field, value, onChange, error, disabled }) {
   return (
     <div className="space-y-1.5">
       <Checkbox
@@ -19,6 +19,7 @@ export default function CheckboxField({ field, value, onChange, disabled }) {
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
       />
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 }
