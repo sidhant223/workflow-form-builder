@@ -9,7 +9,7 @@ import { stageBadgeType } from "../../workflow/stageBadge";
 
 function SubmissionRow({ submission, onSelect }) {
   return (
-    <div className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0">
+    <div className="flex items-center justify-between border-b border-gray-100 p-4 transition-colors last:border-b-0 hover:bg-gray-50">
       <div>
         <div className="flex items-center gap-2">
           <p className="font-medium text-gray-800">{submission.displayName}</p>

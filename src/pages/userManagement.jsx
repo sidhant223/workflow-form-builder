@@ -26,7 +26,7 @@ function UserManagement() {
           </thead>
           <tbody>
             {MOCK_USERS.map((u) => (
-              <tr key={u.id} className="border-t border-gray-100">
+              <tr key={u.id} className="border-t border-gray-100 transition-colors hover:bg-gray-50">
                 <td className="px-4 py-3 text-gray-800">{u.name}</td>
                 <td className="px-4 py-3 text-gray-600">{u.email}</td>
                 <td className="px-4 py-3">
