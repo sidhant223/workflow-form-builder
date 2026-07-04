@@ -3,9 +3,14 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Submissions from "./submissions";
 import { useSubmissionStore } from "../store/submissionStore";
+import { useWorkflowStore } from "../store/workflowStore";
+import { useRoleStore, MOCK_USERS } from "../store/roleStore";
+import { DEFAULT_WORKFLOWS } from "../schemas/workflowSchema";
 
 beforeEach(() => {
   useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
+  useWorkflowStore.setState({ workflows: DEFAULT_WORKFLOWS, nextId: 1 });
+  useRoleStore.setState({ currentUserId: MOCK_USERS[0].id });
   localStorage.clear();
 });
 
@@ -60,11 +65,74 @@ describe("Submissions page", () => {
     const user = userEvent.setup();
     render(<Submissions />);
 
-    const janeRow = screen.getByText("Jane Doe").closest("div").parentElement;
+    const janeRow = screen.getByText("Jane Doe").closest(".border-b");
     await user.click(within(janeRow).getByRole("button", { name: "View Details" }));
 
     expect(screen.getByText("Submission Details")).toBeInTheDocument();
     expect(screen.getByText("jane@test.com")).toBeInTheDocument();
     expect(screen.getByText(/FORM-\d{6}/)).toBeInTheDocument();
+  });
+});
+
+describe("Submissions page — workflow status and actions", () => {
+  function seedWorkflowSubmission() {
+    const workflowId = useWorkflowStore.getState().workflows[0].id; // Leave Approval
+    const stages = useWorkflowStore.getState().workflows[0].stages;
+    return useSubmissionStore.getState().addSubmission({
+      formId: "leave_request",
+      formName: "Leave Request",
+      responses: { field_1: "Jane Doe" },
+      fields: [{ id: "field_1", type: "text" }],
+      workflowId,
+      stages,
+      submittedBy: "Jamie (Employee)",
+    });
+  }
+
+  it("shows a status badge and lets an Employee submit a Draft, then a Manager advance and approve it", async () => {
+    useRoleStore.setState({ currentUserId: "user_employee" });
+    seedWorkflowSubmission();
+    const user = userEvent.setup();
+    render(<Submissions />);
+
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "View Details" }));
+    expect(screen.getByText("Current Status")).toBeInTheDocument();
+
+    // Employee: Draft -> Submitted
+    await user.click(screen.getByRole("button", { name: "Submit" }));
+    expect(await screen.findByText("Moved to Submitted.")).toBeInTheDocument();
+
+    // Manager: Submitted -> Manager Review -> Approved (with a comment)
+    useRoleStore.setState({ currentUserId: "user_manager" });
+    await user.click(screen.getByRole("button", { name: "Move to Manager Review" }));
+    expect(await screen.findByText("Moved to Manager Review.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    const dialog = screen.getByText("Approve — Add a Comment").closest('[role="dialog"]');
+    await user.type(within(dialog).getByLabelText("Comments"), "Approved, enjoy your trip.");
+    await user.click(within(dialog).getByRole("button", { name: "Approve" }));
+
+    expect(await screen.findByText(/approved the request\./)).toBeInTheDocument();
+
+    const updated = useSubmissionStore.getState().submissions[0];
+    expect(updated.stage).toBe("Approved");
+    expect(updated.history.at(-1)).toMatchObject({
+      stage: "Approved",
+      action: "approve",
+      comment: "Approved, enjoy your trip.",
+    });
+  });
+
+  it("assigns the submission to a mock user", async () => {
+    seedWorkflowSubmission();
+    const user = userEvent.setup();
+    render(<Submissions />);
+
+    await user.click(screen.getByRole("button", { name: "View Details" }));
+    await user.selectOptions(screen.getByLabelText("Assigned To"), "Morgan (Manager)");
+
+    expect(useSubmissionStore.getState().submissions[0].assignedTo).toBe("Morgan (Manager)");
   });
 });

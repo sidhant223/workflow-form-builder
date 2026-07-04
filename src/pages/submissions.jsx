@@ -1,11 +1,16 @@
 // src/pages/submissions.jsx
 // Route: /submissions
-// Real submission history: search by name/form, filter by date, view full details.
+// Real submission history: search by name/form, filter by date, view full details
+// including workflow status, timeline, task assignment, and actions.
 
 import { useMemo, useState } from "react";
 import { useSubmissionStore } from "../store/submissionStore";
 import { filterSubmissions } from "../store/submissionHelpers";
-import SubmissionDetailModal from "../components/submissions/SubmissionDetailModal";
+import SubmissionDetailModal, {
+  stageBadgeType,
+} from "../components/submissions/SubmissionDetailModal";
+import Badge from "../components/ui/badge";
+import Toast from "../components/ui/toast";
 
 const DATE_FILTERS = [
   { value: "all", label: "All Time" },
@@ -19,11 +24,18 @@ function Submissions() {
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [selected, setSelected] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
   const visible = useMemo(
     () => filterSubmissions(submissions, { search, dateFilter }),
     [submissions, search, dateFilter]
   );
+
+  // Keep the open modal's data fresh as the underlying submission changes
+  // (e.g. after an approve/reject action updates its stage and history).
+  const selectedSubmission = selected
+    ? submissions.find((s) => s.id === selected.id) || null
+    : null;
 
   return (
     <div>
@@ -64,9 +76,15 @@ function Submissions() {
               className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0"
             >
               <div>
-                <p className="font-medium text-gray-800">{submission.displayName}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-800">{submission.displayName}</p>
+                  {submission.stage && (
+                    <Badge text={submission.stage} type={stageBadgeType(submission.stage)} />
+                  )}
+                </div>
                 <p className="text-sm text-gray-500">
                   {submission.formName} · {new Date(submission.submittedAt).toLocaleString()}
+                  {submission.assignedTo && <> · Assigned to {submission.assignedTo}</>}
                 </p>
               </div>
               <button
@@ -80,7 +98,15 @@ function Submissions() {
         )}
       </div>
 
-      <SubmissionDetailModal submission={selected} onClose={() => setSelected(null)} />
+      <SubmissionDetailModal
+        submission={selectedSubmission}
+        onClose={() => setSelected(null)}
+        onNotify={setToastMessage}
+      />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
     </div>
   );
 }
