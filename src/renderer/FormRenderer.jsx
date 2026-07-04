@@ -1,17 +1,15 @@
 // src/renderer/FormRenderer.jsx
-// -----------------------------------------------------------------------------
-// The Dynamic Form Renderer.
-//
-//   Read schema  →  loop through fields  →  render the correct component.
-//
-// It owns the live form values (controlled inputs), seeds them from each
-// field's `defaultValue`, and reconciles them whenever fields are added or
-// removed so it can be reused both on the builder canvas and the preview page.
-// -----------------------------------------------------------------------------
+// The Dynamic Form Renderer — schema in, live react-hook-form-backed inputs out.
+// Owns validation (via the validation engine), conditional visibility, and
+// optional multi-step navigation with an auto-appended review step.
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import DynamicField from "./DynamicField";
 import Button from "../components/ui/button";
+import { getValidationRules } from "../validation/buildValidationRules";
+import { isFieldVisible } from "./conditionalVisibility";
+import { groupFieldsBySection } from "./formSteps";
 
 function seedValue(field) {
   if (field.defaultValue !== undefined && field.defaultValue !== "") {
@@ -20,7 +18,7 @@ function seedValue(field) {
   return field.type === "checkbox" ? false : "";
 }
 
-function buildInitialValues(schema) {
+function buildDefaultValues(schema) {
   return schema.reduce((acc, field) => {
     acc[field.id] = seedValue(field);
     return acc;
@@ -29,39 +27,44 @@ function buildInitialValues(schema) {
 
 export default function FormRenderer({
   schema = [],
+  sections = [],
   disabled = false,
   showSubmit = false,
   submitLabel = "Submit",
   onSubmit,
   emptyMessage = "No fields added yet",
 }) {
-  const [values, setValues] = useState(() => buildInitialValues(schema));
-  const [fieldSignature, setFieldSignature] = useState(() =>
-    schema.map((f) => f.id).join("|")
-  );
+  const {
+    control,
+    handleSubmit,
+    watch,
+    trigger,
+    getValues,
+    unregister,
+    formState: { errors },
+  } = useForm({ defaultValues: buildDefaultValues(schema) });
 
-  // Keep `values` in sync with the schema when fields are added or removed.
-  // Adjusting state during render (when a derived signature changes) is React's
-  // recommended alternative to an effect — no cascading re-render, no stale input.
-  const signature = schema.map((f) => f.id).join("|");
-  if (signature !== fieldSignature) {
-    setFieldSignature(signature);
-    setValues((prev) => {
-      const next = {};
-      schema.forEach((field) => {
-        next[field.id] = field.id in prev ? prev[field.id] : seedValue(field);
-      });
-      return next;
+  const watchedValues = watch();
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const steps = useMemo(() => groupFieldsBySection(schema, sections), [schema, sections]);
+  const isMultiStep = sections.length > 0;
+  const totalSteps = isMultiStep ? steps.length + 1 : 1; // +1 for the auto review step
+  const isReviewStep = isMultiStep && stepIndex === steps.length;
+
+  // Drop validation rules (but keep the entered value) for any field whose
+  // showIf condition currently hides it — otherwise a hidden required field
+  // would still block submission, since react-hook-form retains a field's
+  // rules across unmounts by default (needed so multi-step values persist
+  // across steps).
+  useEffect(() => {
+    schema.forEach((field) => {
+      if (!isFieldVisible(field, watchedValues)) {
+        unregister(field.id, { keepValue: true, keepError: false });
+      }
     });
-  }
-
-  const handleChange = (id, value) =>
-    setValues((prev) => ({ ...prev, [id]: value }));
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (onSubmit) onSubmit(values);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(watchedValues)]);
 
   if (!schema.length) {
     return (
@@ -72,24 +75,120 @@ export default function FormRenderer({
     );
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {schema.map((field) => (
-        <DynamicField
-          key={field.id}
-          field={field}
-          value={values[field.id]}
-          onChange={handleChange}
-          disabled={disabled}
-        />
-      ))}
+  const renderField = (field) => {
+    if (!isFieldVisible(field, watchedValues)) return null;
 
-      {showSubmit && (
-        <div className="pt-2">
-          <Button type="submit" size="lg">
-            {submitLabel}
-          </Button>
+    return (
+      <Controller
+        key={field.id}
+        name={field.id}
+        control={control}
+        rules={getValidationRules(field)}
+        render={({ field: { onChange, value } }) => (
+          <DynamicField
+            field={field}
+            value={value}
+            onChange={(next) =>
+              onChange(field.type === "number" && next !== "" ? Number(next) : next)
+            }
+            error={errors[field.id]?.message}
+            disabled={disabled}
+          />
+        )}
+      />
+    );
+  };
+
+  const currentStepFields = isMultiStep && !isReviewStep ? steps[stepIndex].fields : schema;
+
+  const goNext = async () => {
+    const visibleNames = currentStepFields
+      .filter((field) => isFieldVisible(field, watchedValues))
+      .map((field) => field.id);
+    const valid = await trigger(visibleNames);
+    if (valid) setStepIndex((i) => i + 1);
+  };
+
+  const goPrevious = () => setStepIndex((i) => Math.max(0, i - 1));
+
+  const handleFormKeyDown = (event) => {
+    if (event.key === "Enter" && isMultiStep && !isReviewStep) {
+      event.preventDefault();
+    }
+  };
+
+  const submitHandler = (values) => {
+    if (onSubmit) onSubmit(values);
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit(submitHandler)}
+      onKeyDown={handleFormKeyDown}
+      noValidate
+      className="space-y-5"
+    >
+      {isMultiStep && (
+        <div className="mb-2">
+          <p className="text-sm font-medium text-gray-500">
+            Step {stepIndex + 1} of {totalSteps}
+            {!isReviewStep && steps[stepIndex].name ? ` — ${steps[stepIndex].name}` : ""}
+            {isReviewStep ? " — Review & Submit" : ""}
+          </p>
+          <div className="mt-2 h-1.5 w-full rounded-full bg-gray-200">
+            <div
+              className="h-1.5 rounded-full bg-violet-600 transition-all"
+              style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
+            />
+          </div>
         </div>
+      )}
+
+      {isReviewStep ? (
+        <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
+          {schema
+            .filter((field) => isFieldVisible(field, watchedValues))
+            .map((field) => (
+              <div
+                key={field.id}
+                className="flex justify-between gap-4 border-b border-gray-100 pb-2 text-sm last:border-b-0"
+              >
+                <span className="font-medium text-gray-600">{field.label}</span>
+                <span className="text-gray-900">
+                  {field.type === "checkbox"
+                    ? getValues(field.id)
+                      ? "Yes"
+                      : "No"
+                    : String(getValues(field.id) ?? "") || "—"}
+                </span>
+              </div>
+            ))}
+        </div>
+      ) : (
+        (isMultiStep ? steps[stepIndex].fields : schema).map(renderField)
+      )}
+
+      {isMultiStep ? (
+        <div className="flex items-center justify-between pt-2">
+          <Button type="button" variant="outline" onClick={goPrevious} disabled={stepIndex === 0}>
+            Previous
+          </Button>
+          {isReviewStep ? (
+            showSubmit && <Button type="submit">{submitLabel}</Button>
+          ) : (
+            <Button type="button" onClick={goNext}>
+              Next
+            </Button>
+          )}
+        </div>
+      ) : (
+        showSubmit && (
+          <div className="pt-2">
+            <Button type="submit" size="lg">
+              {submitLabel}
+            </Button>
+          </div>
+        )
       )}
     </form>
   );
