@@ -17,7 +17,10 @@ that **persists to localStorage**, so a form survives a page refresh.
 - **React 19** (Vite)
 - **Tailwind CSS 4** (`@tailwindcss/vite`)
 - **React Router 7**
-- **Zustand** (global builder state + localStorage persistence)
+- **Zustand** (global state; forms/workflows/submissions are now API-backed,
+  see Week 7 below)
+- **Axios** (REST API layer, see Week 7 below)
+- **json-server** (mock REST backend for local development)
 - **@dnd-kit** (drag-and-drop toolkit for field reordering and creation)
 - **Recharts** (dashboard chart)
 
@@ -247,16 +250,72 @@ architecture notes, testing strategy, and the demo/screenshot checklist).
 See `WEEK6-IMPLEMENTATION.md` for the full write-up (workflow concepts,
 architecture notes, testing strategy, and the demo/screenshot checklist).
 
+## Week 7 Features — API Integration, Authentication & Production Readiness
+
+### REST API Layer
+- `src/services/api.js` — a shared Axios instance (base URL, headers,
+  10s timeout, a request interceptor attaching a mock bearer token, and a
+  response interceptor normalizing every error into `{ message, status }`).
+- `formService.js` / `workflowService.js` / `submissionService.js` — thin
+  `getX`/`createX`/`updateX`/`deleteX` wrappers per resource, backed by a
+  local **json-server** mock REST API (`db.json`).
+- `formsStore` (the saved-forms list — distinct from the Form Builder's
+  in-progress draft), `workflowStore`, and `submissionStore` all fetch from
+  and persist to this API instead of localStorage.
+
+### Authentication & Protected Routes
+- `/login` matches email/password against three mock accounts
+  (`admin@test.com` / `manager@test.com` / `employee@test.com`, password
+  `password123`), session persisted to `sessionStorage`.
+- Every other route sits behind `ProtectedRoute`, which redirects signed-out
+  visitors to `/login` and returns them to where they were headed after
+  signing in.
+
+### Role-Based Navigation
+- The sidebar now shows a different set of links per simulated role
+  (Employee: Dashboard/Forms/My Submissions; Manager: Dashboard/Pending
+  Approvals/Workflows; Admin: Dashboard/Forms/Workflows/User Management).
+
+### Data Management
+- **Forms** (`/forms`) — a new page listing saved forms with search, status/
+  date filters, sort, and per-role actions (Admin: New/Edit/Delete; everyone:
+  Fill Form). The Form Builder gained Save/Publish buttons wired to this API.
+- **Submissions** — search now also matches response values (e.g. email),
+  plus a stage filter (Approved/Pending/Rejected).
+- **Pagination** — Forms, Workflows, and Submissions are all paginated.
+
+### Loading, Error & Empty States
+- Shared `Spinner`/`ErrorBanner`/`EmptyState` components across every list
+  page, and a global `ErrorBoundary` around the whole app.
+
+### Performance
+- Every route is code-split via `React.lazy`/`Suspense`; list rows and
+  Dashboard's stat/chart calculations are memoized (`React.memo`, `useMemo`,
+  `useCallback`) so unrelated re-renders don't redo unrelated work.
+
+See `WEEK7-IMPLEMENTATION.md` for the full write-up (REST API research
+notes, architecture decisions, testing strategy, and the demo/screenshot
+checklist).
+
 ## Routes
 
-| Route           | Page              |
-| --------------- | ----------------- |
-| `/dashboard`    | Dashboard         |
-| `/form-builder` | Form Builder (with DnD) |
-| `/workflow`     | Workflow Configuration |
-| `/preview`      | Preview (with metadata) |
-| `/submissions`  | Submissions       |
-| `/components`   | Component Showcase|
+| Route                | Page                          | Access          |
+| --------------------- | ----------------------------- | --------------- |
+| `/login`              | Login                         | Public          |
+| `/dashboard`          | Dashboard                     | All roles       |
+| `/forms`              | Forms List                    | All roles       |
+| `/form-builder`       | Form Builder (with DnD)       | All roles       |
+| `/workflow`           | Workflow Configuration        | All roles (edit: Admin) |
+| `/preview`            | Preview (with metadata)       | All roles       |
+| `/submissions`        | Submissions                   | All roles       |
+| `/pending-approvals`  | Pending Approvals (scoped)    | All roles       |
+| `/my-submissions`     | My Submissions (scoped)       | All roles       |
+| `/user-management`    | User Management (placeholder) | All roles       |
+| `/components`         | Component Showcase            | All roles       |
+
+All routes except `/login` require an authenticated session; the sidebar
+only *links* to the subset relevant to the current simulated role (see
+Week 7 → Role-Based Navigation above).
 
 ## Getting Started
 
@@ -264,15 +323,27 @@ architecture notes, testing strategy, and the demo/screenshot checklist).
 # install dependencies
 npm install
 
-# start the dev server (http://localhost:5173)
-npm run dev
+# start the mock API (http://localhost:4000) AND the dev server (http://localhost:5173) together
+npm run dev:all
+
+# — or run them separately —
+npm run server   # mock REST API only
+npm run dev      # Vite dev server only
 
 # production build
 npm run build
 
 # lint
 npm run lint
+
+# tests
+npm run test
 ```
+
+Sign in at `/login` with any of the demo accounts shown on the page
+(password `password123` for all three). The API base URL defaults to
+`http://localhost:4000`; override it with a `VITE_API_BASE_URL` env var if
+you point the app at a different backend.
 
 ## Screenshots
 
@@ -291,7 +362,9 @@ npm run lint
 src/
 ├── components/
 │   ├── header.jsx
-│   ├── sidebar.jsx
+│   ├── sidebar.jsx                # role-based nav (Week 7)
+│   ├── ProtectedRoute.jsx         # auth route guard (Week 7)
+│   ├── ErrorBoundary.jsx          # global error boundary (Week 7)
 │   ├── ui/                       # reusable component library
 │   │   ├── badge.jsx
 │   │   ├── button.jsx
@@ -302,39 +375,84 @@ src/
 │   │   ├── radio.jsx
 │   │   ├── select.jsx
 │   │   ├── textarea.jsx          # (enhanced with helpText)
-│   │   └── toast.jsx
+│   │   ├── toast.jsx
+│   │   ├── spinner.jsx           # loading spinner (Week 7)
+│   │   ├── emptyState.jsx        # "No X Available" placeholder (Week 7)
+│   │   ├── errorBanner.jsx       # error message + Retry (Week 7)
+│   │   └── pagination.jsx        # Previous/1 2 3/Next control (Week 7)
 │   ├── builder/                  # Week 4: Drag-and-drop components
 │   │   ├── FieldPalette.jsx      # Draggable field type selection
 │   │   ├── SortableCanvas.jsx    # Reorderable field list
 │   │   ├── DraggableField.jsx    # Individual draggable field item
 │   │   ├── PropertyPanel.jsx     # Field property editor
 │   │   └── FormMetadata.jsx      # Form-level settings editor
+│   ├── workflow/                 # Week 6: workflow UI
+│   │   ├── WorkflowStageEditor.jsx
+│   │   ├── WorkflowTimeline.jsx
+│   │   ├── WorkflowActions.jsx
+│   │   └── CommentDialog.jsx
+│   ├── submissions/
+│   │   ├── SubmissionDetailModal.jsx
+│   │   └── SubmissionRow.jsx      # memoized list row (Week 7)
+│   ├── forms/
+│   │   └── FormRow.jsx            # memoized list row (Week 7)
 │   └── viewer/
 │       └── JSONViewer.jsx        # Schema inspector modal
+├── services/                     # REST API layer (Week 7)
+│   ├── api.js                    # shared Axios instance + interceptors
+│   ├── formService.js
+│   ├── workflowService.js
+│   └── submissionService.js
 ├── schemas/
-│   └── formSchema.js             # field model, factory + example schemas (enhanced)
+│   ├── formSchema.js             # field model, factory + example schemas
+│   ├── templates.js              # form templates
+│   └── workflowSchema.js
 ├── renderer/                     # schema-driven rendering engine
 │   ├── FormRenderer.jsx          # reads schema → renders the form
 │   ├── DynamicField.jsx          # one schema field → one component
 │   ├── fieldRegistry.js          # type → component map
+│   ├── conditionalVisibility.js
+│   ├── formSteps.js
 │   └── fields/                   # per-type field components
-│       ├── TextField.jsx         # (enhanced with helpText)
-│       ├── TextareaField.jsx     # (enhanced with helpText)
+│       ├── TextField.jsx
+│       ├── TextareaField.jsx
 │       ├── SelectField.jsx
 │       ├── CheckboxField.jsx
 │       └── RadioField.jsx
+├── validation/
+│   └── buildValidationRules.js
+├── workflow/
+│   ├── workflowTransitions.js
+│   ├── rolePermissions.js        # canPerformAction/canConfigureWorkflows/canManageForms
+│   ├── dashboardStats.js
+│   └── stageBadge.js
+├── navigation/
+│   └── navItems.js                # role → sidebar links (Week 7)
+├── utils/
+│   ├── slugify.js
+│   └── pagination.js              # paginate() helper (Week 7)
 ├── store/
-│   └── formStore.js              # Zustand store + localStorage (Week 4: enhanced with metadata, sections, duplication, reordering)
+│   ├── formStore.js               # Form Builder's single in-progress draft (localStorage)
+│   ├── formsStore.js              # saved-forms list, API-backed (Week 7)
+│   ├── formsHelpers.js            # Forms search/filter/sort (Week 7)
+│   ├── workflowStore.js           # API-backed (Week 7)
+│   ├── submissionStore.js         # API-backed (Week 7)
+│   ├── submissionHelpers.js
+│   └── authStore.js               # mock auth + session (Week 7)
 ├── layouts/
 │   └── MainLayout.jsx
 ├── pages/
 │   ├── components.jsx
 │   ├── dashboard.jsx
-│   ├── formbuilder.jsx           # DnD-enabled builder with metadata
-│   ├── preview.jsx               # preview with metadata + JSON viewer
-│   ├── submissions.jsx
+│   ├── login.jsx                  # Week 7
+│   ├── forms.jsx                  # Week 7
+│   ├── formbuilder.jsx            # DnD-enabled builder, now with Save/Publish
+│   ├── preview.jsx
+│   ├── submissions.jsx            # also powers pendingApprovals/mySubmissions via `mode`
+│   ├── pendingApprovals.jsx       # Week 7
+│   ├── mySubmissions.jsx          # Week 7
+│   ├── userManagement.jsx         # Week 7 (placeholder)
 │   └── workflow.jsx
-└── App.jsx
+├── main.jsx                       # wraps <App/> in <ErrorBoundary>
+└── App.jsx                        # lazy-loaded routes behind ProtectedRoute
 ```
-
-
