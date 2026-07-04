@@ -60,6 +60,17 @@ export function createField(type, id) {
     required: false,
     defaultValue: meta.type === "checkbox" ? false : "",
     helpText: "",
+    // Validation (Week 5)
+    minLength: undefined,
+    maxLength: undefined,
+    min: undefined,
+    max: undefined,
+    pattern: "",
+    patternMessage: "",
+    // Conditional visibility (Week 5)
+    showIf: null,
+    // Multi-step assignment (Week 5)
+    sectionId: null,
   };
 
   if (hasOptions(meta.type)) {
