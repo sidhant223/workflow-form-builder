@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useFormStore } from "../store/formStore";
@@ -6,6 +7,8 @@ import FieldPalette from "../components/builder/FieldPalette";
 import SortableCanvas from "../components/builder/SortableCanvas";
 import PropertyPanel from "../components/builder/PropertyPanel";
 import FormMetadata from "../components/builder/FormMetadata";
+import StepManagerPanel from "../components/builder/StepManagerPanel";
+import TemplatePickerModal from "../components/builder/TemplatePickerModal";
 import Button from "../components/ui/button";
 import Badge from "../components/ui/badge";
 
@@ -20,6 +23,7 @@ function FormBuilder() {
   const reorderFields = useFormStore((s) => s.reorderFields);
   const resetForm = useFormStore((s) => s.resetForm);
   const loadSchema = useFormStore((s) => s.loadSchema);
+  const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -68,9 +72,12 @@ function FormBuilder() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => loadSchema(exampleEmployeeForm)}
+              onClick={() => loadSchema({ fields: exampleEmployeeForm })}
             >
               Load Sample
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setTemplateModalOpen(true)}>
+              Use Template
             </Button>
             <Button
               variant="outline"
@@ -122,11 +129,18 @@ function FormBuilder() {
           {/* RIGHT — PROPERTY PANEL */}
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm overflow-y-auto max-h-[680px]">
             <h2 className="mb-4 font-semibold text-gray-900">⚙️ Properties</h2>
+            <StepManagerPanel />
             <FormMetadata />
             <PropertyPanel />
           </div>
         </div>
       </div>
+
+      <TemplatePickerModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setTemplateModalOpen(false)}
+        onSelect={(template) => loadSchema(template)}
+      />
     </DndContext>
   );
 }
