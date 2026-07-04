@@ -11,6 +11,20 @@ export function extractDisplayName(responses, fields) {
   return candidate ? String(responses[candidate.id]) : "Anonymous";
 }
 
+export function initialStage(stages) {
+  return stages && stages.length ? stages[0] : null;
+}
+
+export function buildHistoryEntry({ stage, action, user, comment = "", timestamp }) {
+  return {
+    stage,
+    action,
+    user: user || "Unknown",
+    comment,
+    timestamp: timestamp || new Date().toISOString(),
+  };
+}
+
 export function filterSubmissions(
   submissions,
   { search = "", dateFilter = "all", now = Date.now() } = {}

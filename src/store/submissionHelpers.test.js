@@ -3,6 +3,8 @@ import {
   formatReferenceNumber,
   extractDisplayName,
   filterSubmissions,
+  initialStage,
+  buildHistoryEntry,
 } from "./submissionHelpers";
 
 describe("formatReferenceNumber", () => {
@@ -60,5 +62,44 @@ describe("filterSubmissions", () => {
 
   it("returns everything for dateFilter 'all' and empty search", () => {
     expect(filterSubmissions(submissions, { now })).toEqual(submissions);
+  });
+});
+
+describe("initialStage", () => {
+  it("returns the first stage when a workflow is linked", () => {
+    expect(initialStage(["Draft", "Submitted", "Approved"])).toBe("Draft");
+  });
+
+  it("returns null when there is no workflow", () => {
+    expect(initialStage([])).toBeNull();
+    expect(initialStage(undefined)).toBeNull();
+  });
+});
+
+describe("buildHistoryEntry", () => {
+  it("fills in defaults for an unattributed, comment-free entry", () => {
+    const entry = buildHistoryEntry({ stage: "Draft", action: "Created" });
+    expect(entry.stage).toBe("Draft");
+    expect(entry.action).toBe("Created");
+    expect(entry.user).toBe("Unknown");
+    expect(entry.comment).toBe("");
+    expect(entry.timestamp).toEqual(expect.any(String));
+  });
+
+  it("preserves an explicit user, comment, and timestamp", () => {
+    const entry = buildHistoryEntry({
+      stage: "Approved",
+      action: "approve",
+      user: "Morgan (Manager)",
+      comment: "Looks good.",
+      timestamp: "2026-07-04T00:00:00.000Z",
+    });
+    expect(entry).toEqual({
+      stage: "Approved",
+      action: "approve",
+      user: "Morgan (Manager)",
+      comment: "Looks good.",
+      timestamp: "2026-07-04T00:00:00.000Z",
+    });
   });
 });
