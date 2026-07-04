@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useRoleStore, useCurrentUser, MOCK_USERS } from "../store/roleStore";
 
 // Maps the current route to a readable page title shown in the header.
 const pageTitles = {
@@ -16,6 +17,8 @@ function Header({ openSidebar }) {
   const title = pageTitles[pathname] || "FormFlow";
 
   const [profileOpen, setProfileOpen] = useState(false);
+  const currentUser = useCurrentUser();
+  const setCurrentUserId = useRoleStore((s) => s.setCurrentUserId);
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-5">
@@ -31,6 +34,22 @@ function Header({ openSidebar }) {
       </div>
 
       <div className="flex items-center gap-4">
+        <label className="hidden items-center gap-2 text-sm text-gray-600 sm:flex">
+          Viewing as
+          <select
+            aria-label="Simulated active user"
+            value={currentUser.id}
+            onChange={(e) => setCurrentUserId(e.target.value)}
+            className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-violet-300"
+          >
+            {MOCK_USERS.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <button
           aria-label="Notifications"
           className="relative text-xl text-gray-600 transition-colors hover:text-gray-800"
@@ -50,7 +69,7 @@ function Header({ openSidebar }) {
               👤
             </div>
             <span className="hidden text-sm font-medium text-gray-700 sm:block">
-              Admin
+              {currentUser.role}
             </span>
           </button>
 
@@ -62,8 +81,8 @@ function Header({ openSidebar }) {
               />
               <div className="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
                 <div className="border-b border-gray-100 px-4 py-2">
-                  <p className="text-sm font-medium text-gray-800">Admin User</p>
-                  <p className="text-xs text-gray-500">admin@example.com</p>
+                  <p className="text-sm font-medium text-gray-800">{currentUser.name}</p>
+                  <p className="text-xs text-gray-500">{currentUser.role}</p>
                 </div>
                 <button className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
                   Profile
