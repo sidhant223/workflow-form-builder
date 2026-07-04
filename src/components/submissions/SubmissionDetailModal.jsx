@@ -2,19 +2,11 @@
 import { useWorkflowStore } from "../../store/workflowStore";
 import { useSubmissionStore } from "../../store/submissionStore";
 import { MOCK_USERS } from "../../store/roleStore";
+import { stageBadgeType } from "../../workflow/stageBadge";
 import Modal from "../ui/modal";
 import Badge from "../ui/badge";
 import WorkflowTimeline from "../workflow/WorkflowTimeline";
 import WorkflowActions from "../workflow/WorkflowActions";
-
-export function stageBadgeType(stage) {
-  if (!stage) return "neutral";
-  const lower = stage.toLowerCase();
-  if (lower === "approved") return "success";
-  if (lower === "rejected") return "error";
-  if (lower === "draft") return "neutral";
-  return "warning";
-}
 
 const ACTION_MESSAGES = {
   approve: (user) => `${user} approved the request.`,

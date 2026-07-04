@@ -6,9 +6,8 @@
 import { useMemo, useState } from "react";
 import { useSubmissionStore } from "../store/submissionStore";
 import { filterSubmissions } from "../store/submissionHelpers";
-import SubmissionDetailModal, {
-  stageBadgeType,
-} from "../components/submissions/SubmissionDetailModal";
+import { stageBadgeType } from "../workflow/stageBadge";
+import SubmissionDetailModal from "../components/submissions/SubmissionDetailModal";
 import Badge from "../components/ui/badge";
 import Toast from "../components/ui/toast";
 

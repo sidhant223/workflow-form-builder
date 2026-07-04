@@ -19,7 +19,7 @@ import {
   computeFormsByStatus,
   computeWorkflowDistribution,
 } from "../workflow/dashboardStats";
-import { stageBadgeType } from "../components/submissions/SubmissionDetailModal";
+import { stageBadgeType } from "../workflow/stageBadge";
 import Badge from "../components/ui/badge";
 
 const PIE_COLORS = ["#7c3aed", "#0ea5e9", "#f59e0b", "#ef4444", "#10b981", "#6b7280"];
