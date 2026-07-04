@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { useFormStore } from "../store/formStore";
 import { useSubmissionStore } from "../store/submissionStore";
 import { useWorkflowStore } from "../store/workflowStore";
-import { useCurrentUser } from "../store/roleStore";
+import { useCurrentUser } from "../store/authStore";
 import { slugify } from "../utils/slugify";
 import FormRenderer from "../renderer/FormRenderer";
 import JSONViewer from "../components/viewer/JSONViewer";

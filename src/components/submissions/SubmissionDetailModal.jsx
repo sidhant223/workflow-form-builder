@@ -1,7 +1,7 @@
 // src/components/submissions/SubmissionDetailModal.jsx
 import { useWorkflowStore } from "../../store/workflowStore";
 import { useSubmissionStore } from "../../store/submissionStore";
-import { MOCK_USERS } from "../../store/roleStore";
+import { MOCK_USERS } from "../../store/authStore";
 import { stageBadgeType } from "../../workflow/stageBadge";
 import Modal from "../ui/modal";
 import Badge from "../ui/badge";

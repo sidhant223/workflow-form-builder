@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { useWorkflowStore } from "../store/workflowStore";
-import { useCurrentUser } from "../store/roleStore";
+import { useCurrentUser } from "../store/authStore";
 import { canConfigureWorkflows } from "../workflow/rolePermissions";
 import WorkflowStageEditor from "../components/workflow/WorkflowStageEditor";
 import Badge from "../components/ui/badge";

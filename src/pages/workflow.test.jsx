@@ -3,12 +3,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Workflow from "./workflow";
 import { useWorkflowStore } from "../store/workflowStore";
-import { useRoleStore, MOCK_USERS } from "../store/roleStore";
+import { useAuthStore, MOCK_USERS } from "../store/authStore";
 import { DEFAULT_WORKFLOWS } from "../schemas/workflowSchema";
 
 beforeEach(() => {
   useWorkflowStore.setState({ workflows: DEFAULT_WORKFLOWS, nextId: 1 });
-  useRoleStore.setState({ currentUserId: MOCK_USERS[0].id }); // Admin
+  useAuthStore.setState({ currentUserId: MOCK_USERS[0].id }); // Admin
   localStorage.clear();
 });
 
@@ -65,7 +65,7 @@ describe("Workflow configuration page (Admin)", () => {
 
 describe("Workflow configuration page (non-Admin)", () => {
   it("shows a read-only view for a Manager", () => {
-    useRoleStore.setState({ currentUserId: "user_manager" });
+    useAuthStore.setState({ currentUserId: "user_manager" });
     render(<Workflow />);
 
     expect(screen.getByText(/Only Admins can configure workflows/)).toBeInTheDocument();

@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { getAvailableActions } from "../../workflow/workflowTransitions";
 import { canPerformAction } from "../../workflow/rolePermissions";
-import { useCurrentUser } from "../../store/roleStore";
+import { useCurrentUser } from "../../store/authStore";
 import Button from "../ui/button";
 import CommentDialog from "./CommentDialog";
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
-import { useRoleStore, useCurrentUser, MOCK_USERS } from "../store/roleStore";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore, useCurrentUser } from "../store/authStore";
 
 // Maps the current route to a readable page title shown in the header.
 const pageTitles = {
@@ -10,15 +10,26 @@ const pageTitles = {
   "/preview": "Preview",
   "/submissions": "Submissions",
   "/components": "Components",
+  "/forms": "Forms",
+  "/pending-approvals": "Pending Approvals",
+  "/my-submissions": "My Submissions",
+  "/user-management": "User Management",
 };
 
 function Header({ openSidebar }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const title = pageTitles[pathname] || "FormFlow";
 
   const [profileOpen, setProfileOpen] = useState(false);
   const currentUser = useCurrentUser();
-  const setCurrentUserId = useRoleStore((s) => s.setCurrentUserId);
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = () => {
+    setProfileOpen(false);
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-5">
@@ -34,22 +45,6 @@ function Header({ openSidebar }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <label className="hidden items-center gap-2 text-sm text-gray-600 sm:flex">
-          Viewing as
-          <select
-            aria-label="Simulated active user"
-            value={currentUser.id}
-            onChange={(e) => setCurrentUserId(e.target.value)}
-            className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-violet-300"
-          >
-            {MOCK_USERS.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <button
           aria-label="Notifications"
           className="relative text-xl text-gray-600 transition-colors hover:text-gray-800"
@@ -62,6 +57,7 @@ function Header({ openSidebar }) {
           <button
             onClick={() => setProfileOpen((v) => !v)}
             className="flex items-center gap-2"
+            aria-label="Account menu"
             aria-haspopup="true"
             aria-expanded={profileOpen}
           >
@@ -90,7 +86,10 @@ function Header({ openSidebar }) {
                 <button className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
                   Settings
                 </button>
-                <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                >
                   Logout
                 </button>
               </div>

@@ -4,13 +4,13 @@ import userEvent from "@testing-library/user-event";
 import Submissions from "./submissions";
 import { useSubmissionStore } from "../store/submissionStore";
 import { useWorkflowStore } from "../store/workflowStore";
-import { useRoleStore, MOCK_USERS } from "../store/roleStore";
+import { useAuthStore, MOCK_USERS } from "../store/authStore";
 import { DEFAULT_WORKFLOWS } from "../schemas/workflowSchema";
 
 beforeEach(() => {
   useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
   useWorkflowStore.setState({ workflows: DEFAULT_WORKFLOWS, nextId: 1 });
-  useRoleStore.setState({ currentUserId: MOCK_USERS[0].id });
+  useAuthStore.setState({ currentUserId: MOCK_USERS[0].id });
   localStorage.clear();
 });
 
@@ -90,7 +90,7 @@ describe("Submissions page — workflow status and actions", () => {
   }
 
   it("shows a status badge and lets an Employee submit a Draft, then a Manager advance and approve it", async () => {
-    useRoleStore.setState({ currentUserId: "user_employee" });
+    useAuthStore.setState({ currentUserId: "user_employee" });
     seedWorkflowSubmission();
     const user = userEvent.setup();
     render(<Submissions />);
@@ -105,7 +105,7 @@ describe("Submissions page — workflow status and actions", () => {
     expect(await screen.findByText("Moved to Submitted.")).toBeInTheDocument();
 
     // Manager: Submitted -> Manager Review -> Approved (with a comment)
-    useRoleStore.setState({ currentUserId: "user_manager" });
+    useAuthStore.setState({ currentUserId: "user_manager" });
     await user.click(screen.getByRole("button", { name: "Move to Manager Review" }));
     expect(await screen.findByText("Moved to Manager Review.")).toBeInTheDocument();
 

@@ -6,7 +6,7 @@ import Preview from "./preview";
 import { useFormStore } from "../store/formStore";
 import { useSubmissionStore } from "../store/submissionStore";
 import { useWorkflowStore } from "../store/workflowStore";
-import { useRoleStore, MOCK_USERS } from "../store/roleStore";
+import { useAuthStore, MOCK_USERS } from "../store/authStore";
 
 function renderPreview() {
   return render(
@@ -19,7 +19,7 @@ function renderPreview() {
 beforeEach(() => {
   useFormStore.getState().resetForm();
   useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
-  useRoleStore.setState({ currentUserId: MOCK_USERS[0].id });
+  useAuthStore.setState({ currentUserId: MOCK_USERS[0].id });
   localStorage.clear();
 });
 

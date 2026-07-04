@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import WorkflowActions from "./WorkflowActions";
-import { useRoleStore, MOCK_USERS } from "../../store/roleStore";
+import { useAuthStore, MOCK_USERS } from "../../store/authStore";
 
 const STAGES = ["Draft", "Submitted", "Manager Review", "Approved", "Rejected"];
 
 beforeEach(() => {
-  useRoleStore.setState({ currentUserId: MOCK_USERS[0].id });
+  useAuthStore.setState({ currentUserId: MOCK_USERS[0].id });
   localStorage.clear();
 });
 
@@ -25,7 +25,7 @@ describe("WorkflowActions", () => {
   });
 
   it("lets an Employee submit a Draft directly, with no comment dialog", () => {
-    useRoleStore.setState({ currentUserId: "user_employee" });
+    useAuthStore.setState({ currentUserId: "user_employee" });
     const onAction = vi.fn();
     render(<WorkflowActions stages={STAGES} currentStage="Draft" onAction={onAction} />);
 
@@ -40,13 +40,13 @@ describe("WorkflowActions", () => {
   });
 
   it("tells an Employee they're waiting on a Manager at the review stage", () => {
-    useRoleStore.setState({ currentUserId: "user_employee" });
+    useAuthStore.setState({ currentUserId: "user_employee" });
     render(<WorkflowActions stages={STAGES} currentStage="Manager Review" onAction={() => {}} />);
     expect(screen.getByText(/Waiting on a Manager or Admin/)).toBeInTheDocument();
   });
 
   it("lets a Manager approve with a comment via the dialog", async () => {
-    useRoleStore.setState({ currentUserId: "user_manager" });
+    useAuthStore.setState({ currentUserId: "user_manager" });
     const onAction = vi.fn();
     const user = userEvent.setup();
     render(<WorkflowActions stages={STAGES} currentStage="Manager Review" onAction={onAction} />);
@@ -67,7 +67,7 @@ describe("WorkflowActions", () => {
   });
 
   it("lets a Manager reject with a comment via the dialog", async () => {
-    useRoleStore.setState({ currentUserId: "user_manager" });
+    useAuthStore.setState({ currentUserId: "user_manager" });
     const onAction = vi.fn();
     const user = userEvent.setup();
     render(<WorkflowActions stages={STAGES} currentStage="Manager Review" onAction={onAction} />);

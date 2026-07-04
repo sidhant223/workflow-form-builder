@@ -1,0 +1,18 @@
+{
+  "forms": [],
+  "workflows": [
+    {
+      "id": "workflow_default_leave_approval",
+      "workflowName": "Leave Approval",
+      "stages": [
+        "Draft",
+        "Submitted",
+        "Manager Review",
+        "Approved",
+        "Rejected"
+      ]
+    }
+  ],
+  "submissions": [],
+  "$schema": "./node_modules/json-server/schema.json"
+}
