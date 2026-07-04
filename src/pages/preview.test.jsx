@@ -5,6 +5,8 @@ import { MemoryRouter } from "react-router-dom";
 import Preview from "./preview";
 import { useFormStore } from "../store/formStore";
 import { useSubmissionStore } from "../store/submissionStore";
+import { useWorkflowStore } from "../store/workflowStore";
+import { useRoleStore, MOCK_USERS } from "../store/roleStore";
 
 function renderPreview() {
   return render(
@@ -17,6 +19,7 @@ function renderPreview() {
 beforeEach(() => {
   useFormStore.getState().resetForm();
   useSubmissionStore.setState({ submissions: [], nextRefNumber: 1 });
+  useRoleStore.setState({ currentUserId: MOCK_USERS[0].id });
   localStorage.clear();
 });
 
@@ -54,7 +57,31 @@ describe("Preview page", () => {
       formName: "Employee Registration",
       displayName: "Jane Doe",
       responses: { field_1: "Jane Doe", field_2: "jane@test.com" },
+      workflowId: null,
+      stage: null,
     });
+    expect(screen.getByText("Form submitted successfully.")).toBeInTheDocument();
+  });
+
+  it("starts a submission at the linked workflow's first stage", async () => {
+    const user = userEvent.setup();
+    const workflowId = useWorkflowStore.getState().workflows[0].id; // seeded "Leave Approval"
+    useFormStore.getState().loadSchema({
+      formName: "Leave Request",
+      workflowId,
+      fields: [{ id: "field_1", type: "text", label: "Reason", placeholder: "Why?" }],
+    });
+    renderPreview();
+
+    await user.type(screen.getByPlaceholderText("Why?"), "Vacation");
+    await user.click(screen.getByRole("button", { name: "Submit" }));
+    expect(await screen.findByText("Thank You")).toBeInTheDocument();
+
+    const submissions = useSubmissionStore.getState().submissions;
+    expect(submissions[0].workflowId).toBe(workflowId);
+    expect(submissions[0].stage).toBe("Draft");
+    expect(submissions[0].history).toHaveLength(1);
+    expect(submissions[0].history[0]).toMatchObject({ stage: "Draft", action: "Created" });
   });
 
   it("lets the user submit another response after a successful submission", async () => {

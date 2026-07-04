@@ -8,10 +8,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useFormStore } from "../store/formStore";
 import { useSubmissionStore } from "../store/submissionStore";
+import { useWorkflowStore } from "../store/workflowStore";
+import { useCurrentUser } from "../store/roleStore";
 import { slugify } from "../utils/slugify";
 import FormRenderer from "../renderer/FormRenderer";
 import JSONViewer from "../components/viewer/JSONViewer";
 import Button from "../components/ui/button";
+import Toast from "../components/ui/toast";
 
 function Preview() {
   const fields = useFormStore((s) => s.fields);
@@ -20,10 +23,15 @@ function Preview() {
   const formDescription = useFormStore((s) => s.formDescription);
   const createdBy = useFormStore((s) => s.createdBy);
   const version = useFormStore((s) => s.version);
+  const workflowId = useFormStore((s) => s.workflowId);
+  const workflows = useWorkflowStore((s) => s.workflows);
   const addSubmission = useSubmissionStore((s) => s.addSubmission);
+  const currentUser = useCurrentUser();
   const [submittedRecord, setSubmittedRecord] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
-  const schemaData = { formName, formDescription, createdBy, version, fields, sections };
+  const linkedWorkflow = workflows.find((w) => w.id === workflowId) || null;
+  const schemaData = { formName, formDescription, createdBy, version, fields, sections, workflowId };
 
   const handleSubmit = (values) => {
     const record = addSubmission({
@@ -31,8 +39,12 @@ function Preview() {
       formName: formName || "Untitled Form",
       responses: values,
       fields,
+      workflowId,
+      stages: linkedWorkflow ? linkedWorkflow.stages : [],
+      submittedBy: currentUser.name,
     });
     setSubmittedRecord(record);
+    setToastMessage("Form submitted successfully.");
   };
 
   return (
@@ -110,6 +122,10 @@ function Preview() {
       </div>
 
       <JSONViewer data={schemaData} />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
     </div>
   );
 }
