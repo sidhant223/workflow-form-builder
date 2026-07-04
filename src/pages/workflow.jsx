@@ -3,7 +3,7 @@
 // Configure workflow definitions: name, add/edit/delete/reorder stages.
 // Only the simulated Admin role can edit; other roles see a read-only view.
 
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useWorkflowStore } from "../store/workflowStore";
 import { useCurrentUser } from "../store/authStore";
 import { canConfigureWorkflows } from "../workflow/rolePermissions";
@@ -18,7 +18,7 @@ import Pagination from "../components/ui/pagination";
 
 const PAGE_SIZE = 5;
 
-function ReadOnlyWorkflowCard({ workflow }) {
+const ReadOnlyWorkflowCard = memo(function ReadOnlyWorkflowCard({ workflow }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900">{workflow.workflowName}</h3>
@@ -29,7 +29,7 @@ function ReadOnlyWorkflowCard({ workflow }) {
       </div>
     </div>
   );
-}
+});
 
 function Workflow() {
   const workflows = useWorkflowStore((s) => s.workflows);

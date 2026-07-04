@@ -3,11 +3,11 @@
 // reorder its stages. Read-only view is handled by the parent (workflow.jsx)
 // gating this component behind `canConfigureWorkflows(role)`.
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { useWorkflowStore } from "../../store/workflowStore";
 import Button from "../ui/button";
 
-export default function WorkflowStageEditor({ workflow, onDelete }) {
+function WorkflowStageEditor({ workflow, onDelete }) {
   const updateWorkflowName = useWorkflowStore((s) => s.updateWorkflowName);
   const addStage = useWorkflowStore((s) => s.addStage);
   const updateStage = useWorkflowStore((s) => s.updateStage);
@@ -92,3 +92,5 @@ export default function WorkflowStageEditor({ workflow, onDelete }) {
     </div>
   );
 }
+
+export default memo(WorkflowStageEditor);

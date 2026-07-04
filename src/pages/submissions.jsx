@@ -5,14 +5,13 @@
 // date and stage, paginate, and view full details including workflow
 // status, timeline, task assignment, and actions.
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSubmissionStore } from "../store/submissionStore";
 import { useCurrentUser } from "../store/authStore";
 import { filterSubmissions } from "../store/submissionHelpers";
-import { stageBadgeType } from "../workflow/stageBadge";
 import { paginate } from "../utils/pagination";
 import SubmissionDetailModal from "../components/submissions/SubmissionDetailModal";
-import Badge from "../components/ui/badge";
+import SubmissionRow from "../components/submissions/SubmissionRow";
 import Toast from "../components/ui/toast";
 import Spinner from "../components/ui/spinner";
 import ErrorBanner from "../components/ui/errorBanner";
@@ -104,6 +103,9 @@ function Submissions({ mode = "all" }) {
     [filtered, page]
   );
 
+  const handleSelect = useCallback((submission) => setSelected(submission), []);
+  const handleCloseModal = useCallback(() => setSelected(null), []);
+
   // Keep the open modal's data fresh as the underlying submission changes
   // (e.g. after an approve/reject action updates its stage and history).
   const selectedSubmission = selected
@@ -161,29 +163,7 @@ function Submissions({ mode = "all" }) {
           <EmptyState icon="📭" title={copy.emptyTitle} />
         ) : (
           visible.map((submission) => (
-            <div
-              key={submission.id}
-              className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-gray-800">{submission.displayName}</p>
-                  {submission.stage && (
-                    <Badge text={submission.stage} type={stageBadgeType(submission.stage)} />
-                  )}
-                </div>
-                <p className="text-sm text-gray-500">
-                  {submission.formName} · {new Date(submission.submittedAt).toLocaleString()}
-                  {submission.assignedTo && <> · Assigned to {submission.assignedTo}</>}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelected(submission)}
-                className="text-sm font-medium text-violet-600 hover:underline"
-              >
-                View Details
-              </button>
-            </div>
+            <SubmissionRow key={submission.id} submission={submission} onSelect={handleSelect} />
           ))
         )}
       </div>
@@ -194,7 +174,7 @@ function Submissions({ mode = "all" }) {
 
       <SubmissionDetailModal
         submission={selectedSubmission}
-        onClose={() => setSelected(null)}
+        onClose={handleCloseModal}
         onNotify={setToastMessage}
       />
 

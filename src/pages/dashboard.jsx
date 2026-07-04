@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart,
@@ -28,10 +29,13 @@ function Dashboard() {
   const submissions = useSubmissionStore((s) => s.submissions);
   const workflows = useWorkflowStore((s) => s.workflows);
 
-  const stats = computeDashboardStats(submissions);
-  const formsByStatus = computeFormsByStatus(submissions);
-  const workflowDistribution = computeWorkflowDistribution(submissions, workflows);
-  const recentSubmissions = submissions.slice(0, 5);
+  const stats = useMemo(() => computeDashboardStats(submissions), [submissions]);
+  const formsByStatus = useMemo(() => computeFormsByStatus(submissions), [submissions]);
+  const workflowDistribution = useMemo(
+    () => computeWorkflowDistribution(submissions, workflows),
+    [submissions, workflows]
+  );
+  const recentSubmissions = useMemo(() => submissions.slice(0, 5), [submissions]);
 
   const kpiCards = [
     { title: "Pending Reviews", value: stats.pendingReviews, icon: "⏳" },

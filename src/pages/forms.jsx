@@ -4,7 +4,7 @@
 // name/date, paginate. Admins can create/edit/delete; every role can fill
 // out a published-or-draft form via "Fill Form".
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormsStore } from "../store/formsStore";
 import { useFormStore } from "../store/formStore";
@@ -16,8 +16,8 @@ import Spinner from "../components/ui/spinner";
 import ErrorBanner from "../components/ui/errorBanner";
 import EmptyState from "../components/ui/emptyState";
 import Pagination from "../components/ui/pagination";
-import Badge from "../components/ui/badge";
 import Button from "../components/ui/button";
+import FormRow from "../components/forms/FormRow";
 
 const DATE_FILTERS = [
   { value: "all", label: "All Time" },
@@ -97,21 +97,30 @@ function Forms() {
     navigate("/form-builder");
   };
 
-  const handleEdit = (form) => {
-    loadSchema(form);
-    navigate("/form-builder");
-  };
+  const handleEdit = useCallback(
+    (form) => {
+      loadSchema(form);
+      navigate("/form-builder");
+    },
+    [loadSchema, navigate]
+  );
 
-  const handleFill = (form) => {
-    loadSchema(form);
-    navigate("/preview");
-  };
+  const handleFill = useCallback(
+    (form) => {
+      loadSchema(form);
+      navigate("/preview");
+    },
+    [loadSchema, navigate]
+  );
 
-  const handleDelete = (form) => {
-    if (window.confirm(`Delete "${form.formName || "Untitled Form"}"? This cannot be undone.`)) {
-      deleteFormById(form.id);
-    }
-  };
+  const handleDelete = useCallback(
+    (form) => {
+      if (window.confirm(`Delete "${form.formName || "Untitled Form"}"? This cannot be undone.`)) {
+        deleteFormById(form.id);
+      }
+    },
+    [deleteFormById]
+  );
 
   return (
     <div>
@@ -184,48 +193,14 @@ function Forms() {
           />
         ) : (
           visible.map((form) => (
-            <div
+            <FormRow
               key={form.id}
-              className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-gray-800">{form.formName || "Untitled Form"}</p>
-                  <Badge
-                    text={form.status || "Draft"}
-                    type={form.status === "Published" ? "success" : "neutral"}
-                  />
-                </div>
-                <p className="text-sm text-gray-500">
-                  {form.formDescription || "No description"} · Created{" "}
-                  {new Date(form.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleFill(form)}
-                  className="text-sm font-medium text-violet-600 hover:underline"
-                >
-                  Fill Form
-                </button>
-                {canManage && (
-                  <>
-                    <button
-                      onClick={() => handleEdit(form)}
-                      className="text-sm font-medium text-gray-600 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(form)}
-                      className="text-sm font-medium text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+              form={form}
+              canManage={canManage}
+              onFill={handleFill}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </div>
