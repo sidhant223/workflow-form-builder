@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Workflow from "./workflow";
 import { useWorkflowStore } from "../store/workflowStore";
@@ -69,15 +69,30 @@ describe("Workflow configuration page (Admin)", () => {
     ).not.toContain("Archived");
   });
 
-  it("deletes a whole workflow", async () => {
+  it("deletes a whole workflow after confirming in the dialog", async () => {
     const user = userEvent.setup();
     render(<Workflow />);
     await screen.findByDisplayValue("Leave Approval");
 
     await user.click(screen.getByRole("button", { name: "🗑️ Delete Workflow" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(/Delete "Leave Approval"/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     expect(useWorkflowStore.getState().workflows).toHaveLength(0);
     expect(screen.getByText("No workflows configured yet")).toBeInTheDocument();
+  });
+
+  it("keeps the workflow when deletion is cancelled", async () => {
+    const user = userEvent.setup();
+    render(<Workflow />);
+    await screen.findByDisplayValue("Leave Approval");
+
+    await user.click(screen.getByRole("button", { name: "🗑️ Delete Workflow" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    expect(useWorkflowStore.getState().workflows).toHaveLength(1);
   });
 });
 

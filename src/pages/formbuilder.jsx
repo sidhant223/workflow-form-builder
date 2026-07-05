@@ -35,11 +35,12 @@ function FormBuilder() {
   const updateFormMetadata = useFormStore((s) => s.updateFormMetadata);
   const saveForm = useFormsStore((s) => s.saveForm);
   const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [savingAction, setSavingAction] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
+  const isSaving = savingAction !== null;
 
   const handleSave = async (nextStatus = status) => {
-    setIsSaving(true);
+    setSavingAction(nextStatus === "Published" ? "publish" : "save");
     const result = await saveForm({
       id,
       formName,
@@ -51,7 +52,7 @@ function FormBuilder() {
       sections,
       status: nextStatus,
     });
-    setIsSaving(false);
+    setSavingAction(null);
 
     if (result.success) {
       updateFormMetadata({ id: result.form.id, status: result.form.status });
@@ -128,14 +129,16 @@ function FormBuilder() {
               size="sm"
               onClick={() => handleSave()}
               disabled={isSaving || fields.length === 0}
+              isLoading={savingAction === "save"}
             >
-              {isSaving ? "Saving…" : "Save"}
+              Save
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSave("Published")}
               disabled={isSaving || fields.length === 0}
+              isLoading={savingAction === "publish"}
             >
               Publish
             </Button>
@@ -173,7 +176,6 @@ function FormBuilder() {
                 onSelectField={selectField}
                 onDeleteField={removeField}
                 onDuplicateField={duplicateField}
-                onReorderFields={reorderFields}
               />
             </div>
           </div>

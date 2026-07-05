@@ -12,6 +12,7 @@ export default function Button({
   type = "button",
   fullWidth = false,
   disabled = false,
+  isLoading = false,
   className = "",
   ...rest
 }) {
@@ -40,12 +41,19 @@ export default function Button({
   return (
     <button
       type={type}
-      disabled={disabled}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
       className={`${base} ${variants[variant]} ${sizes[size]} ${
         fullWidth ? "w-full" : ""
       } ${className}`}
       {...rest}
     >
+      {isLoading && (
+        <span
+          aria-hidden="true"
+          className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+        />
+      )}
       {children}
     </button>
   );

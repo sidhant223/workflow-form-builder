@@ -32,7 +32,7 @@ function WorkflowStageEditor({ workflow, onDelete }) {
           aria-label="Workflow Name"
         />
         <button
-          onClick={() => onDelete(workflow.id)}
+          onClick={() => onDelete(workflow)}
           className="rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
         >
           🗑️ Delete Workflow

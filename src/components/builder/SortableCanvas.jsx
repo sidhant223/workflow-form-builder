@@ -10,7 +10,6 @@ export default function SortableCanvas({
   onSelectField,
   onDeleteField,
   onDuplicateField,
-  onReorderFields,
 }) {
   if (!fields.length) {
     return (

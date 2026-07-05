@@ -17,14 +17,9 @@ import ErrorBanner from "../components/ui/errorBanner";
 import EmptyState from "../components/ui/emptyState";
 import Pagination from "../components/ui/pagination";
 import Button from "../components/ui/button";
+import ConfirmDialog from "../components/ui/confirmDialog";
 import FormRow from "../components/forms/FormRow";
-
-const DATE_FILTERS = [
-  { value: "all", label: "All Time" },
-  { value: "today", label: "Today" },
-  { value: "7days", label: "Last 7 Days" },
-  { value: "30days", label: "Last 30 Days" },
-];
+import { DATE_FILTER_OPTIONS } from "../utils/dateFilter";
 
 const STATUS_FILTERS = [
   { value: "all", label: "All Statuses" },
@@ -56,6 +51,7 @@ function Forms() {
   const [dateFilter, setDateFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [page, setPage] = useState(1);
+  const [formPendingDelete, setFormPendingDelete] = useState(null);
 
   useEffect(() => {
     fetchForms();
@@ -113,14 +109,14 @@ function Forms() {
     [loadSchema, navigate]
   );
 
-  const handleDelete = useCallback(
-    (form) => {
-      if (window.confirm(`Delete "${form.formName || "Untitled Form"}"? This cannot be undone.`)) {
-        deleteFormById(form.id);
-      }
-    },
-    [deleteFormById]
-  );
+  const handleDelete = useCallback((form) => {
+    setFormPendingDelete(form);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    deleteFormById(formPendingDelete.id);
+    setFormPendingDelete(null);
+  }, [deleteFormById, formPendingDelete]);
 
   return (
     <div>
@@ -158,7 +154,7 @@ function Forms() {
           onChange={(e) => updateDateFilter(e.target.value)}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
         >
-          {DATE_FILTERS.map((f) => (
+          {DATE_FILTER_OPTIONS.map((f) => (
             <option key={f.value} value={f.value}>
               {f.label}
             </option>
@@ -208,6 +204,15 @@ function Forms() {
       {!isLoading && !error && (
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(formPendingDelete)}
+        title="Delete Form"
+        message={`Delete "${formPendingDelete?.formName || "Untitled Form"}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setFormPendingDelete(null)}
+      />
     </div>
   );
 }

@@ -47,6 +47,7 @@ beforeEach(() => {
   useFormStore.getState().resetForm();
   useAuthStore.setState({ currentUserId: MOCK_USERS[0].id }); // Admin
   getForms.mockImplementation(() => Promise.resolve(useFormsStore.getState().forms));
+  deleteForm.mockClear();
 });
 
 describe("Forms page (Admin)", () => {
@@ -112,19 +113,35 @@ describe("Forms page (Admin)", () => {
     expect(useFormStore.getState().id).toBe("f1");
   });
 
-  it("deletes a form after confirmation", async () => {
+  it("deletes a form after confirming in the dialog", async () => {
     useFormsStore.setState({ forms: SEED_FORMS });
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     deleteForm.mockResolvedValueOnce("f1");
     const user = userEvent.setup();
     renderForms();
     const row = (await screen.findByText("Employee Registration")).closest(".border-b");
 
     await user.click(within(row).getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(/Delete "Employee Registration"/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     expect(deleteForm).toHaveBeenCalledWith("f1");
     expect(await screen.findByText("Leave Request")).toBeInTheDocument();
     expect(screen.queryByText("Employee Registration")).not.toBeInTheDocument();
+  });
+
+  it("keeps the form when deletion is cancelled", async () => {
+    useFormsStore.setState({ forms: SEED_FORMS });
+    const user = userEvent.setup();
+    renderForms();
+    const row = (await screen.findByText("Employee Registration")).closest(".border-b");
+
+    await user.click(within(row).getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    expect(deleteForm).not.toHaveBeenCalled();
+    expect(screen.getByText("Employee Registration")).toBeInTheDocument();
   });
 });
 

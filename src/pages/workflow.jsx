@@ -15,6 +15,7 @@ import Spinner from "../components/ui/spinner";
 import ErrorBanner from "../components/ui/errorBanner";
 import EmptyState from "../components/ui/emptyState";
 import Pagination from "../components/ui/pagination";
+import ConfirmDialog from "../components/ui/confirmDialog";
 
 const PAGE_SIZE = 5;
 
@@ -42,6 +43,7 @@ function Workflow() {
   const canConfigure = canConfigureWorkflows(currentUser.role);
   const [newWorkflowName, setNewWorkflowName] = useState("");
   const [page, setPage] = useState(1);
+  const [workflowPendingDelete, setWorkflowPendingDelete] = useState(null);
 
   useEffect(() => {
     fetchWorkflows();
@@ -57,6 +59,11 @@ function Workflow() {
     if (!newWorkflowName.trim()) return;
     addWorkflow(newWorkflowName.trim());
     setNewWorkflowName("");
+  };
+
+  const confirmDeleteWorkflow = () => {
+    removeWorkflow(workflowPendingDelete.id);
+    setWorkflowPendingDelete(null);
   };
 
   return (
@@ -99,7 +106,7 @@ function Workflow() {
             <WorkflowStageEditor
               key={workflow.id}
               workflow={workflow}
-              onDelete={removeWorkflow}
+              onDelete={setWorkflowPendingDelete}
             />
           ))
         ) : (
@@ -112,6 +119,15 @@ function Workflow() {
       {!isLoading && !error && workflows.length > 0 && (
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(workflowPendingDelete)}
+        title="Delete Workflow"
+        message={`Delete "${workflowPendingDelete?.workflowName}"? Forms linked to this workflow will lose their approval stages. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteWorkflow}
+        onCancel={() => setWorkflowPendingDelete(null)}
+      />
     </div>
   );
 }
