@@ -17,13 +17,7 @@ import Spinner from "../components/ui/spinner";
 import ErrorBanner from "../components/ui/errorBanner";
 import EmptyState from "../components/ui/emptyState";
 import Pagination from "../components/ui/pagination";
-
-const DATE_FILTERS = [
-  { value: "all", label: "All Time" },
-  { value: "today", label: "Today" },
-  { value: "7days", label: "Last 7 Days" },
-  { value: "30days", label: "Last 30 Days" },
-];
+import { DATE_FILTER_OPTIONS } from "../utils/dateFilter";
 
 const STATUS_FILTERS = [
   { value: "all", label: "All Statuses" },
@@ -132,7 +126,7 @@ function Submissions({ mode = "all" }) {
           onChange={(e) => updateDateFilter(e.target.value)}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
         >
-          {DATE_FILTERS.map((f) => (
+          {DATE_FILTER_OPTIONS.map((f) => (
             <option key={f.value} value={f.value}>
               {f.label}
             </option>

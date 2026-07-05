@@ -1,8 +1,7 @@
 // src/store/formsHelpers.js
 // Pure search/filter/sort logic for the Forms list page.
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const FILTER_DAYS = { today: 1, "7days": 7, "30days": 30 };
+import { isWithinDateFilter } from "../utils/dateFilter";
 
 export function filterAndSortForms(
   forms,
@@ -16,13 +15,7 @@ export function filterAndSortForms(
 
     if (statusFilter !== "all" && (form.status || "Draft") !== statusFilter) return false;
 
-    if (dateFilter !== "all") {
-      const days = FILTER_DAYS[dateFilter];
-      if (days) {
-        const createdAt = new Date(form.createdAt).getTime();
-        if (createdAt < now - days * DAY_MS) return false;
-      }
-    }
+    if (!isWithinDateFilter(form.createdAt, dateFilter, now)) return false;
 
     return true;
   });

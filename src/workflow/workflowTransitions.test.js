@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   getAvailableActions,
-  isValidTransition,
   isOutcomeStage,
   getTimelineStages,
 } from "./workflowTransitions";
@@ -50,22 +49,6 @@ describe("getAvailableActions", () => {
     expect(getAvailableActions(stages, "Review")).toEqual([
       { action: "approve", label: "Approve", toStage: "Approved" },
     ]);
-  });
-});
-
-describe("isValidTransition", () => {
-  it("allows a transition that matches an available action", () => {
-    expect(isValidTransition(STAGES, "Draft", "Submitted")).toBe(true);
-    expect(isValidTransition(STAGES, "Manager Review", "Rejected")).toBe(true);
-  });
-
-  it("rejects skipping stages", () => {
-    expect(isValidTransition(STAGES, "Draft", "Manager Review")).toBe(false);
-    expect(isValidTransition(STAGES, "Draft", "Approved")).toBe(false);
-  });
-
-  it("rejects moving out of a terminal stage", () => {
-    expect(isValidTransition(STAGES, "Approved", "Rejected")).toBe(false);
   });
 });
 

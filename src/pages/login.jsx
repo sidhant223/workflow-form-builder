@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuthStore, MOCK_USERS } from "../store/authStore";
+import { useAuthStore, MOCK_USERS, MOCK_PASSWORD } from "../store/authStore";
 import Input from "../components/ui/input";
 import Button from "../components/ui/button";
 
@@ -74,7 +74,7 @@ function Login() {
         </form>
 
         <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-500">
-          <p className="font-medium text-gray-600">Demo accounts (password: password123)</p>
+          <p className="font-medium text-gray-600">Demo accounts (password: {MOCK_PASSWORD})</p>
           <ul className="mt-1 space-y-0.5">
             {MOCK_USERS.map((u) => (
               <li key={u.id}>

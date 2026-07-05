@@ -5,12 +5,12 @@
 import { isOutcomeStage } from "./workflowTransitions";
 
 function isSameCalendarDay(isoString, now) {
-  const a = new Date(isoString);
-  const b = new Date(now);
+  const submittedDate = new Date(isoString);
+  const referenceDate = new Date(now);
   return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
+    submittedDate.getFullYear() === referenceDate.getFullYear() &&
+    submittedDate.getMonth() === referenceDate.getMonth() &&
+    submittedDate.getDate() === referenceDate.getDate()
   );
 }
 

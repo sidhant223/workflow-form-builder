@@ -13,7 +13,7 @@ import SelectField from "./fields/SelectField";
 import CheckboxField from "./fields/CheckboxField";
 import RadioField from "./fields/RadioField";
 
-export const fieldRegistry = {
+const fieldRegistry = {
   text: TextField,
   email: TextField,
   number: TextField,

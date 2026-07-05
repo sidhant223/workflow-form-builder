@@ -1,6 +1,6 @@
+import { isWithinDateFilter } from "../utils/dateFilter";
+
 const NAME_LIKE_TYPES = ["text", "email"];
-const DAY_MS = 24 * 60 * 60 * 1000;
-const FILTER_DAYS = { today: 1, "7days": 7, "30days": 30 };
 
 export function formatReferenceNumber(n) {
   return `FORM-${String(n).padStart(6, "0")}`;
@@ -54,13 +54,7 @@ export function filterSubmissions(
       );
     if (!matchesSearch) return false;
 
-    if (dateFilter !== "all") {
-      const days = FILTER_DAYS[dateFilter];
-      if (days) {
-        const submittedAt = new Date(submission.submittedAt).getTime();
-        if (submittedAt < now - days * DAY_MS) return false;
-      }
-    }
+    if (!isWithinDateFilter(submission.submittedAt, dateFilter, now)) return false;
 
     if (statusFilter !== "all") {
       const stage = (submission.stage || "").toLowerCase();

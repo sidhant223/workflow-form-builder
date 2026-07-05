@@ -23,6 +23,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createField } from "../schemas/formSchema";
+import { moveItem } from "../utils/moveItem";
 
 export const useFormStore = create(
   persist(
@@ -100,12 +101,7 @@ export const useFormStore = create(
 
       // Reorder fields
       reorderFields: (fromIndex, toIndex) =>
-        set((state) => {
-          const newFields = [...state.fields];
-          const [movedField] = newFields.splice(fromIndex, 1);
-          newFields.splice(toIndex, 0, movedField);
-          return { fields: newFields };
-        }),
+        set((state) => ({ fields: moveItem(state.fields, fromIndex, toIndex) })),
 
       // Select field
       selectField: (id) => set({ selectedFieldId: id }),

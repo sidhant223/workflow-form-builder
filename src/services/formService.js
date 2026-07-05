@@ -8,11 +8,6 @@ export async function getForms() {
   return data;
 }
 
-export async function getForm(id) {
-  const { data } = await api.get(`/forms/${id}`);
-  return data;
-}
-
 export async function createForm(payload) {
   const { data } = await api.post("/forms", payload);
   return data;

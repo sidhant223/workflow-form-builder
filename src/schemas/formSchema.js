@@ -37,13 +37,13 @@ export const FIELD_TYPES = [
 ];
 
 // Quick lookup: type -> meta entry (e.g. FIELD_TYPE_MAP.text.label).
-export const FIELD_TYPE_MAP = FIELD_TYPES.reduce((map, meta) => {
+const FIELD_TYPE_MAP = FIELD_TYPES.reduce((map, meta) => {
   map[meta.type] = meta;
   return map;
 }, {});
 
 // Does this field type carry an `options` array?
-export const hasOptions = (type) => OPTION_FIELD_TYPES.includes(type);
+const hasOptions = (type) => OPTION_FIELD_TYPES.includes(type);
 
 /**
  * Factory that builds a brand-new field with sensible defaults for its type.
@@ -81,35 +81,8 @@ export function createField(type, id) {
 }
 
 // -----------------------------------------------------------------------------
-// Example schemas — handy starting points and a reference for the JSON shape.
+// Example schema — used by the Form Builder's "Load Sample" button.
 // -----------------------------------------------------------------------------
-
-export const exampleContactForm = [
-  {
-    id: "field_name",
-    type: "text",
-    label: "Full Name",
-    placeholder: "Enter full name",
-    required: true,
-    defaultValue: "",
-  },
-  {
-    id: "field_email",
-    type: "email",
-    label: "Email Address",
-    placeholder: "name@example.com",
-    required: true,
-    defaultValue: "",
-  },
-  {
-    id: "field_message",
-    type: "textarea",
-    label: "Message",
-    placeholder: "How can we help?",
-    required: false,
-    defaultValue: "",
-  },
-];
 
 export const exampleEmployeeForm = [
   {
@@ -146,8 +119,3 @@ export const exampleEmployeeForm = [
     defaultValue: "",
   },
 ];
-
-export const exampleSchemas = {
-  contact: exampleContactForm,
-  employee: exampleEmployeeForm,
-};

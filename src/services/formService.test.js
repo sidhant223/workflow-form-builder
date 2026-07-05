@@ -10,7 +10,7 @@ vi.mock("./api", () => ({
 }));
 
 import api from "./api";
-import { getForms, getForm, createForm, updateForm, deleteForm } from "./formService";
+import { getForms, createForm, updateForm, deleteForm } from "./formService";
 
 describe("formService", () => {
   beforeEach(() => {
@@ -22,13 +22,6 @@ describe("formService", () => {
     const forms = await getForms();
     expect(api.get).toHaveBeenCalledWith("/forms");
     expect(forms).toEqual([{ id: "1", formName: "Leave Request" }]);
-  });
-
-  it("getForm sends a GET to /forms/:id", async () => {
-    api.get.mockResolvedValue({ data: { id: "1", formName: "Leave Request" } });
-    const form = await getForm("1");
-    expect(api.get).toHaveBeenCalledWith("/forms/1");
-    expect(form).toEqual({ id: "1", formName: "Leave Request" });
   });
 
   it("createForm sends a POST to /forms with the payload", async () => {

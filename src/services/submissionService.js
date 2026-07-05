@@ -8,11 +8,6 @@ export async function getSubmissions() {
   return data;
 }
 
-export async function getSubmission(id) {
-  const { data } = await api.get(`/submissions/${id}`);
-  return data;
-}
-
 export async function createSubmission(payload) {
   const { data } = await api.post("/submissions", payload);
   return data;

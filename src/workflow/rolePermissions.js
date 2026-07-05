@@ -2,7 +2,7 @@
 // Simulated role-based permissions (no real auth). Gates which workflow
 // action types a role can perform, and whether they can configure workflows.
 
-export const ROLE_PERMISSIONS = {
+const ROLE_PERMISSIONS = {
   Employee: { actions: ["advance"], canConfigureWorkflows: false, canManageForms: false },
   Manager: { actions: ["advance", "approve", "reject"], canConfigureWorkflows: false, canManageForms: false },
   Admin: { actions: ["advance", "approve", "reject"], canConfigureWorkflows: true, canManageForms: true },

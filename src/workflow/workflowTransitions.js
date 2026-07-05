@@ -53,10 +53,6 @@ export function getAvailableActions(stages = [], currentStage) {
   ];
 }
 
-export function isValidTransition(stages, fromStage, toStage) {
-  return getAvailableActions(stages, fromStage).some((a) => a.toStage === toStage);
-}
-
 // Stages to render in a timeline: every sequential (non-outcome) stage, plus
 // whichever outcome stage the history actually reached. If no outcome has
 // been reached yet, the workflow's "Approved" stage (if any) is shown as the

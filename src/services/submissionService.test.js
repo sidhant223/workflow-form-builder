@@ -10,12 +10,7 @@ vi.mock("./api", () => ({
 }));
 
 import api from "./api";
-import {
-  getSubmissions,
-  getSubmission,
-  createSubmission,
-  updateSubmission,
-} from "./submissionService";
+import { getSubmissions, createSubmission, updateSubmission } from "./submissionService";
 
 describe("submissionService", () => {
   beforeEach(() => {
@@ -27,13 +22,6 @@ describe("submissionService", () => {
     const submissions = await getSubmissions();
     expect(api.get).toHaveBeenCalledWith("/submissions");
     expect(submissions).toEqual([{ id: "s1", formName: "Leave Request" }]);
-  });
-
-  it("getSubmission sends a GET to /submissions/:id", async () => {
-    api.get.mockResolvedValue({ data: { id: "s1", formName: "Leave Request" } });
-    const submission = await getSubmission("s1");
-    expect(api.get).toHaveBeenCalledWith("/submissions/s1");
-    expect(submission).toEqual({ id: "s1", formName: "Leave Request" });
   });
 
   it("createSubmission sends a POST to /submissions with the payload", async () => {

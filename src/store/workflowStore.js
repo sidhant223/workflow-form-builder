@@ -15,6 +15,7 @@ import {
   updateWorkflow as updateWorkflowRequest,
   deleteWorkflow as deleteWorkflowRequest,
 } from "../services/workflowService";
+import { moveItem } from "../utils/moveItem";
 
 export const useWorkflowStore = create((set, get) => ({
   workflows: DEFAULT_WORKFLOWS,
@@ -100,10 +101,7 @@ export const useWorkflowStore = create((set, get) => ({
     set((state) => ({
       workflows: state.workflows.map((w) => {
         if (w.id !== workflowId) return w;
-        const stages = [...w.stages];
-        const [moved] = stages.splice(fromIndex, 1);
-        stages.splice(toIndex, 0, moved);
-        updated = { ...w, stages };
+        updated = { ...w, stages: moveItem(w.stages, fromIndex, toIndex) };
         return updated;
       }),
     }));
