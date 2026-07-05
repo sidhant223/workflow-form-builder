@@ -9,7 +9,7 @@ export default function JSONViewer({ data }) {
     <div className="fixed bottom-4 right-4 w-96 max-h-96">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full mb-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        className="w-full mb-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition"
       >
         {isOpen ? "Close" : "View JSON"} 📋
       </button>

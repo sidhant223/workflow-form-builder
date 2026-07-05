@@ -29,7 +29,7 @@ export default function StepManagerPanel() {
             type="text"
             value={section.name}
             onChange={(e) => updateSection(section.id, { name: e.target.value })}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-300"
           />
           <button
             onClick={() => removeSection(section.id)}
@@ -47,7 +47,7 @@ export default function StepManagerPanel() {
           value={newStepName}
           onChange={(e) => setNewStepName(e.target.value)}
           placeholder="New step name"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-300"
         />
         <button
           onClick={handleAdd}

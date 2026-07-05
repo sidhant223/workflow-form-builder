@@ -40,7 +40,7 @@ export default function ConditionalPanel({ field }) {
         id="showif-target"
         value={showIf?.field || ""}
         onChange={(e) => handleTargetChange(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-300"
       >
         <option value="">Always show</option>
         {otherFields.map((f) => (
@@ -56,7 +56,7 @@ export default function ConditionalPanel({ field }) {
             aria-label="Expected value"
             value={showIf.value}
             onChange={(e) => handleValueChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-300"
           >
             <option value="">Select expected value</option>
             {valueOptions.map((opt) => (
@@ -72,7 +72,7 @@ export default function ConditionalPanel({ field }) {
             value={showIf.value}
             onChange={(e) => handleValueChange(e.target.value)}
             placeholder="Expected value"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-300"
           />
         ))}
     </div>

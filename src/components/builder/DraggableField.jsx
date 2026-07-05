@@ -23,7 +23,7 @@ export default function DraggableField({ field, isSelected, onSelect, onDelete, 
       style={style}
       className={`p-4 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all ${
         isSelected
-          ? "border-blue-500 bg-blue-50 shadow-md"
+          ? "border-violet-500 bg-violet-50 shadow-md"
           : "border-gray-200 bg-white hover:border-gray-300"
       }`}
       onClick={() => onSelect(field.id)}
@@ -41,7 +41,7 @@ export default function DraggableField({ field, isSelected, onSelect, onDelete, 
               e.stopPropagation();
               onDuplicate(field.id);
             }}
-            className="p-2 text-gray-500 hover:bg-blue-100 rounded"
+            className="p-2 text-gray-500 hover:bg-violet-100 rounded"
             title="Duplicate"
           >
             📋

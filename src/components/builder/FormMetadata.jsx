@@ -23,7 +23,7 @@ export default function FormMetadata() {
           type="text"
           value={formName}
           onChange={(e) => handleChange("formName", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           placeholder="Enter form name"
         />
       </div>
@@ -36,7 +36,7 @@ export default function FormMetadata() {
         <textarea
           value={formDescription}
           onChange={(e) => handleChange("formDescription", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none text-sm"
           placeholder="Form description"
           rows="2"
         />
@@ -51,7 +51,7 @@ export default function FormMetadata() {
           type="text"
           value={createdBy}
           onChange={(e) => handleChange("createdBy", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           placeholder="Your name"
         />
       </div>
@@ -65,7 +65,7 @@ export default function FormMetadata() {
           type="text"
           value={version}
           onChange={(e) => handleChange("version", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           placeholder="1.0"
         />
       </div>
@@ -79,7 +79,7 @@ export default function FormMetadata() {
           id="prop-workflow"
           value={workflowId || ""}
           onChange={(e) => handleChange("workflowId", e.target.value || null)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
         >
           <option value="">No workflow</option>
           {workflows.map((w) => (

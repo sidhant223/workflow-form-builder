@@ -44,7 +44,7 @@ export default function PropertyPanel() {
         <div className="flex gap-2">
           <button
             onClick={() => duplicateField(selectedField.id)}
-            className="flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
+            className="flex-1 px-3 py-2 bg-violet-600 text-white text-sm rounded hover:bg-violet-700 transition"
           >
             📋 Duplicate
           </button>
@@ -66,7 +66,7 @@ export default function PropertyPanel() {
           type="text"
           value={selectedField.label}
           onChange={(e) => handleChange("label", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           placeholder="Field label"
         />
       </div>
@@ -80,7 +80,7 @@ export default function PropertyPanel() {
           type="text"
           value={selectedField.placeholder || ""}
           onChange={(e) => handleChange("placeholder", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           placeholder="Hint text"
         />
       </div>
@@ -94,7 +94,7 @@ export default function PropertyPanel() {
           type="text"
           value={selectedField.defaultValue || ""}
           onChange={(e) => handleChange("defaultValue", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           placeholder="Default value"
         />
       </div>
@@ -107,7 +107,7 @@ export default function PropertyPanel() {
         <textarea
           value={selectedField.helpText || ""}
           onChange={(e) => handleChange("helpText", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none text-sm"
           placeholder="Additional instructions"
           rows="2"
         />
@@ -137,7 +137,7 @@ export default function PropertyPanel() {
             id="prop-step"
             value={selectedField.sectionId || sections[0].id}
             onChange={(e) => handleChange("sectionId", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
           >
             {sections.map((s) => (
               <option key={s.id} value={s.id}>
@@ -163,7 +163,7 @@ export default function PropertyPanel() {
               onChange={(e) =>
                 handleChange("minLength", e.target.value ? Number(e.target.value) : undefined)
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
             />
           </div>
           <div>
@@ -178,7 +178,7 @@ export default function PropertyPanel() {
               onChange={(e) =>
                 handleChange("maxLength", e.target.value ? Number(e.target.value) : undefined)
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
             />
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function PropertyPanel() {
               value={selectedField.pattern ?? ""}
               onChange={(e) => handleChange("pattern", e.target.value)}
               placeholder="e.g. ^[0-9]{10}$"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none font-mono text-sm"
             />
           </div>
           <div>
@@ -210,7 +210,7 @@ export default function PropertyPanel() {
               value={selectedField.patternMessage ?? ""}
               onChange={(e) => handleChange("patternMessage", e.target.value)}
               placeholder="10 digits only"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
             />
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function PropertyPanel() {
               type="number"
               value={selectedField.min ?? ""}
               onChange={(e) => handleChange("min", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
             />
           </div>
           <div>
@@ -240,7 +240,7 @@ export default function PropertyPanel() {
               type="number"
               value={selectedField.max ?? ""}
               onChange={(e) => handleChange("max", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none"
             />
           </div>
         </div>
@@ -259,7 +259,7 @@ export default function PropertyPanel() {
                   type="text"
                   value={option}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none text-sm"
                   placeholder={`Option ${index + 1}`}
                 />
                 <button

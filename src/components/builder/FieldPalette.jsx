@@ -14,7 +14,7 @@ function DraggableFieldType({ type, label, icon }) {
       {...attributes}
       className={`p-3 rounded-lg border border-gray-300 cursor-grab text-center transition ${
         isDragging
-          ? "opacity-50 bg-blue-100 border-blue-400"
+          ? "opacity-50 bg-violet-100 border-violet-400"
           : "bg-white hover:bg-gray-50 hover:border-gray-400"
       }`}
     >
