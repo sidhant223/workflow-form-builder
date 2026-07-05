@@ -297,6 +297,49 @@ See `WEEK7-IMPLEMENTATION.md` for the full write-up (REST API research
 notes, architecture decisions, testing strategy, and the demo/screenshot
 checklist).
 
+## Week 8 Features — Bug Fixes, Polish, Performance & Deployment
+
+### Bug Fixes
+- Deleting a **Workflow** previously fired instantly with no confirmation —
+  any linked forms silently lost their approval stages. It's now gated
+  behind the same confirmation dialog as Form deletion.
+- Removed a dead `onReorderFields` prop threaded through `SortableCanvas`
+  that was never read (drag-reorder is handled by the builder's `DndContext`
+  directly).
+
+### UX Improvements
+- New `ConfirmDialog` component replaces the native `window.confirm()` for
+  deleting a form or a workflow, matching the app's own styling instead of
+  the browser's default popup.
+- `Button` gained an `isLoading` prop (spinner + auto-disable) so async
+  actions — Form Builder's Save/Publish — show real in-flight feedback
+  instead of just a disabled state.
+
+### UI Improvements
+- The Form Builder's property panel, step manager, form metadata, field
+  palette, and JSON viewer were still using leftover Tailwind `blue-*`
+  classes from early prototyping while the rest of the app had converged on
+  a single **violet** accent. Recolored every one for visual consistency.
+
+### Performance & Cleanup
+- Removed two unreferenced assets (a leftover Vite scaffold screenshot and
+  an unused icon sprite) and confirmed `npm run build` has no unused
+  dependencies to trim.
+- Confirmed route-level code-splitting keeps the large `recharts` dashboard
+  chunk out of the initial bundle (it only loads when `/dashboard` is
+  visited).
+- Reorganized root-level scratch notes (`NOTES.md`, `NOTES-WEEK3.md`,
+  `DEMO_NOTES.md`) into `docs/notes/`, and dropped a redundant HTML export
+  that duplicated `NOTES.md`.
+
+### Deployment
+- Added `vercel.json` (SPA rewrite so client-side routes survive a hard
+  refresh) and `.env.example` documenting `VITE_API_BASE_URL`. See
+  **Deployment** below.
+
+See `WEEK8-IMPLEMENTATION.md` for the full write-up (bug list, fix summary,
+testing report, and the demo/screenshot checklist).
+
 ## Routes
 
 | Route                | Page                          | Access          |
@@ -345,12 +388,37 @@ Sign in at `/login` with any of the demo accounts shown on the page
 `http://localhost:4000`; override it with a `VITE_API_BASE_URL` env var if
 you point the app at a different backend.
 
+## Deployment
+
+The frontend is a static Vite build (`dist/`) and deploys cleanly to any
+static host; **Vercel** is the recommended target and this repo ships a
+`vercel.json` for it.
+
+1. Push this repo to GitHub (already done).
+2. In Vercel: **New Project → Import** this repo. Build command and output
+   directory are read from `vercel.json` (`npm run build` → `dist`), no
+   manual configuration needed.
+3. The mock backend (`json-server` + `db.json`) is a local dev convenience,
+   not something Vercel hosts — it doesn't serve long-running Node
+   processes. For a deployed demo, either:
+   - host `json-server` yourself somewhere that stays running (e.g. Render,
+     Railway, Fly.io) and set the Vercel project's `VITE_API_BASE_URL`
+     environment variable to that URL, **or**
+   - run `npm run server` locally and point a deployed build at it via the
+     same env var, for a live walkthrough during a demo session.
+4. Redeploy after changing the env var — Vite inlines `VITE_*` vars at
+   build time, they aren't read at runtime.
+
+Netlify and GitHub Pages work the same way (`npm run build`, publish
+`dist/`) but need their own SPA-fallback config (`_redirects` for Netlify,
+a copied `index.html` fallback for Pages) instead of `vercel.json`.
+
 ## Screenshots
 
-> Add screenshots here for submission:
-> - Components page (buttons, inputs, dropdowns)
-> - Form Builder page (left palette, center canvas, right property panel)
-> - Responsive mobile view (collapsed sidebar / hamburger)
+> Add screenshots here for submission — see `docs/notes/` and
+> `WEEK8-IMPLEMENTATION.md` for the full required list (Login, Dashboard,
+> Form Builder, Workflow Configuration, Preview, Submissions, Workflow
+> Timeline, Mobile Responsive View, Live Deployment).
 
 | Components Page | Form Builder | Mobile View |
 | --------------- | ------------ | ----------- |
@@ -379,7 +447,8 @@ src/
 │   │   ├── spinner.jsx           # loading spinner (Week 7)
 │   │   ├── emptyState.jsx        # "No X Available" placeholder (Week 7)
 │   │   ├── errorBanner.jsx       # error message + Retry (Week 7)
-│   │   └── pagination.jsx        # Previous/1 2 3/Next control (Week 7)
+│   │   ├── pagination.jsx        # Previous/1 2 3/Next control (Week 7)
+│   │   └── confirmDialog.jsx     # styled delete/discard confirmation (Week 8)
 │   ├── builder/                  # Week 4: Drag-and-drop components
 │   │   ├── FieldPalette.jsx      # Draggable field type selection
 │   │   ├── SortableCanvas.jsx    # Reorderable field list
@@ -456,3 +525,35 @@ src/
 ├── main.jsx                       # wraps <App/> in <ErrorBoundary>
 └── App.jsx                        # lazy-loaded routes behind ProtectedRoute
 ```
+
+## Documentation
+
+- `WEEK4-IMPLEMENTATION.md` through `WEEK8-IMPLEMENTATION.md` — per-week
+  implementation write-ups (research, architecture, testing, screenshots).
+- `docs/notes/` — earlier Week 1–3 concept notes (reusable components,
+  demo talking points, dynamic-form-rendering research).
+- `docs/TECHNICAL_REPORT.md` — full project report (architecture, flow,
+  challenges, learning outcomes, future scope).
+- `docs/USER_GUIDE.md` — end-user walkthrough of every screen.
+- `docs/DEMO_SCRIPT.md` — talking points for a 10–15 minute recorded demo.
+- `docs/PRESENTATION.md` — slide-by-slide content for the project
+  presentation deck.
+- `docs/TESTING_REPORT.md` — test cases, results, and browser/responsive
+  coverage.
+
+## Future Enhancements
+
+- Replace the mock `json-server` backend with a real persistence layer
+  (Postgres/MongoDB + a small API server) so data survives beyond a local
+  `db.json` file and the app can be deployed fully self-contained.
+- Replace mock email/password authentication with a real auth provider
+  (JWT-issuing backend, or an OAuth provider) and per-user hashed
+  credentials instead of a shared demo password.
+- Add real-time updates (WebSocket/SSE) so a workflow's Approve/Reject
+  action is reflected live for anyone else viewing that submission.
+- Field-level file upload / signature-capture field types for the Form
+  Builder.
+- Exportable workflow analytics (CSV/PDF) from the Dashboard.
+- Automated end-to-end browser tests (Playwright) covering the golden path
+  (login → build a form → submit → approve) alongside the existing unit/
+  integration test suite.
