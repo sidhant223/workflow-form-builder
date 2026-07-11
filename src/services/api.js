@@ -12,7 +12,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 10000,
+  // 30s: tolerates the hosted API's cold start (free-tier hosts spin down
+  // when idle and take ~30-60s to wake). Locally the API responds instantly.
+  timeout: 30000,
 });
 
 api.interceptors.request.use((config) => {

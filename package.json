@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "server": "json-server --port 4000 db.json",
+    "start": "json-server db.json --host 0.0.0.0 --port $PORT",
     "dev:all": "concurrently -n VITE,API -c blue,green \"npm:dev\" \"npm:server\"",
     "build": "vite build",
     "lint": "eslint .",

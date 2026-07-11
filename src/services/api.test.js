@@ -10,7 +10,7 @@ describe("api", () => {
   it("configures the base URL, default headers, and a timeout", () => {
     expect(api.defaults.baseURL).toBe("http://localhost:4000");
     expect(api.defaults.headers["Content-Type"]).toBe("application/json");
-    expect(api.defaults.timeout).toBe(10000);
+    expect(api.defaults.timeout).toBe(30000);
   });
 
   it("attaches a bearer token from the auth store to every request", () => {
