@@ -390,28 +390,52 @@ you point the app at a different backend.
 
 ## Deployment
 
-The frontend is a static Vite build (`dist/`) and deploys cleanly to any
-static host; **Vercel** is the recommended target and this repo ships a
-`vercel.json` for it.
+The app is deployed on **Vercel** as a single project — static frontend
+plus a serverless API — with no separate backend service to run.
 
-1. Push this repo to GitHub (already done).
-2. In Vercel: **New Project → Import** this repo. Build command and output
-   directory are read from `vercel.json` (`npm run build` → `dist`), no
-   manual configuration needed.
-3. The mock backend (`json-server` + `db.json`) is a local dev convenience,
-   not something Vercel hosts — it doesn't serve long-running Node
-   processes. For a deployed demo, either:
-   - host `json-server` yourself somewhere that stays running (e.g. Render,
-     Railway, Fly.io) and set the Vercel project's `VITE_API_BASE_URL`
-     environment variable to that URL, **or**
-   - run `npm run server` locally and point a deployed build at it via the
-     same env var, for a live walkthrough during a demo session.
-4. Redeploy after changing the env var — Vite inlines `VITE_*` vars at
-   build time, they aren't read at runtime.
+**Live:** https://workflow-form-builder-five.vercel.app
 
-Netlify and GitHub Pages work the same way (`npm run build`, publish
-`dist/`) but need their own SPA-fallback config (`_redirects` for Netlify,
-a copied `index.html` fallback for Pages) instead of `vercel.json`.
+### Architecture
+
+```
+Vercel
+├── Static frontend (Vite build → dist/)   VITE_API_BASE_URL=/api
+└── /api serverless functions              backed by Upstash Redis (KV)
+    ├── /api/[collection]        GET (list), POST (create)
+    └── /api/[collection]/[id]   GET, PUT, DELETE
+```
+
+`json-server` can't run on Vercel (no long-running process, read-only
+filesystem), so it's replaced in production by the functions under
+[`api/`](api/). They expose the same REST shape the client already calls —
+GET/POST/PUT/DELETE on `forms`, `workflows`, and `submissions` — and persist
+each collection as a JSON array in Upstash Redis. The default "Leave
+Approval" workflow is seeded on first access to mirror `db.json`. Auth stays
+client-side (mock users), so no auth backend is involved.
+
+`json-server` remains the **local dev** backend: `npm run dev:all` runs it on
+port 4000, and `VITE_API_BASE_URL` defaults to `http://localhost:4000` when
+unset. Only the deployed build points at `/api`.
+
+### First-time setup (already done for the live project)
+
+1. Push to GitHub (done).
+2. `npx vercel --prod` — creates the project; build command and output dir
+   are read from `vercel.json` (`npm run build` → `dist`).
+3. In the Vercel dashboard → project → **Storage**, create an **Upstash for
+   Redis** store and connect it to the project. This injects
+   `KV_REST_API_URL` / `KV_REST_API_TOKEN`, which [`api/_store.js`](api/_store.js)
+   reads.
+4. Set `VITE_API_BASE_URL=/api` (Production + Preview):
+   `printf '/api' | npx vercel env add VITE_API_BASE_URL production`
+5. Redeploy so Vite bakes in the env var — `VITE_*` vars are inlined at
+   build time, not read at runtime.
+
+### Shipping updates
+
+Run `npx vercel --prod` from the repo root. To get push-to-deploy instead,
+connect the Git repo in the Vercel dashboard → project → **Settings → Git**
+(requires a GitHub login connection on your Vercel account).
 
 ## Screenshots
 
